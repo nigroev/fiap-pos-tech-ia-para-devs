@@ -1,0 +1,189 @@
+[
+    {
+        "label": "APIRouter",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "APIRouter",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "FastAPI",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "investpy.dados",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "investpy.dados",
+        "description": "investpy.dados",
+        "detail": "investpy.dados",
+        "documentation": {}
+    },
+    {
+        "label": "investpy.calculos",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "investpy.calculos",
+        "description": "investpy.calculos",
+        "detail": "investpy.calculos",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "data",
+        "importPath": "routers",
+        "description": "routers",
+        "isExtraImport": true,
+        "detail": "routers",
+        "documentation": {}
+    },
+    {
+        "label": "calculations",
+        "importPath": "routers",
+        "description": "routers",
+        "isExtraImport": true,
+        "detail": "routers",
+        "documentation": {}
+    },
+    {
+        "label": "StockRequest",
+        "kind": 6,
+        "importPath": "routers.calculations",
+        "description": "routers.calculations",
+        "peekOfCode": "class StockRequest(BaseModel):\n    ticker: str\n    start_date: str\n    end_date: str\n    api_key: str\n@router.post(\"/indicators/\")\ndef calculate_indicators(request: StockRequest):\n    try:\n        df = dados.obter_dados_acao(request.ticker, request.api_key)\n        # Filtrar os dados de acordo com as datas fornecidas",
+        "detail": "routers.calculations",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_indicators",
+        "kind": 2,
+        "importPath": "routers.calculations",
+        "description": "routers.calculations",
+        "peekOfCode": "def calculate_indicators(request: StockRequest):\n    try:\n        df = dados.obter_dados_acao(request.ticker, request.api_key)\n        # Filtrar os dados de acordo com as datas fornecidas\n        df_filtered = df[(df['data'] >= request.start_date) & (df['data'] <= request.end_date)]\n        df_with_indicators = calculos.calcular_retorno_diario(df_filtered)\n        return {\"retorno_diario\": df_with_indicators.to_dict(orient=\"records\")}\n    except Exception as e:\n        raise HTTPException(status_code=400, detail=str(e))",
+        "detail": "routers.calculations",
+        "documentation": {}
+    },
+    {
+        "label": "router",
+        "kind": 5,
+        "importPath": "routers.calculations",
+        "description": "routers.calculations",
+        "peekOfCode": "router = APIRouter()\nclass StockRequest(BaseModel):\n    ticker: str\n    start_date: str\n    end_date: str\n    api_key: str\n@router.post(\"/indicators/\")\ndef calculate_indicators(request: StockRequest):\n    try:\n        df = dados.obter_dados_acao(request.ticker, request.api_key)",
+        "detail": "routers.calculations",
+        "documentation": {}
+    },
+    {
+        "label": "StockRequest",
+        "kind": 6,
+        "importPath": "routers.data",
+        "description": "routers.data",
+        "peekOfCode": "class StockRequest(BaseModel):\n    ticker: str\n    start_date: str\n    end_date: str\n    api_key: str\n@router.post(\"/historical_data/\")\ndef get_historical_data(request: StockRequest):\n    try:\n        df = dados.obter_dados_acao(request.ticker, request.api_key)\n        # Filtrar os dados de acordo com as datas fornecidas",
+        "detail": "routers.data",
+        "documentation": {}
+    },
+    {
+        "label": "get_historical_data",
+        "kind": 2,
+        "importPath": "routers.data",
+        "description": "routers.data",
+        "peekOfCode": "def get_historical_data(request: StockRequest):\n    try:\n        df = dados.obter_dados_acao(request.ticker, request.api_key)\n        # Filtrar os dados de acordo com as datas fornecidas\n        df_filtered = df[(df['data'] >= request.start_date) & (df['data'] <= request.end_date)]\n        return df_filtered.to_dict(orient=\"records\")\n    except Exception as e:\n        raise HTTPException(status_code=400, detail=str(e))",
+        "detail": "routers.data",
+        "documentation": {}
+    },
+    {
+        "label": "router",
+        "kind": 5,
+        "importPath": "routers.data",
+        "description": "routers.data",
+        "peekOfCode": "router = APIRouter()\nclass StockRequest(BaseModel):\n    ticker: str\n    start_date: str\n    end_date: str\n    api_key: str\n@router.post(\"/historical_data/\")\ndef get_historical_data(request: StockRequest):\n    try:\n        df = dados.obter_dados_acao(request.ticker, request.api_key)",
+        "detail": "routers.data",
+        "documentation": {}
+    },
+    {
+        "label": "read_root",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def read_root():\n    return {\"message\": \"Welcome to the InvestPy API\"}",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "app = FastAPI()\napp.include_router(data.router)\napp.include_router(calculations.router)\n@app.get(\"/\")\ndef read_root():\n    return {\"message\": \"Welcome to the InvestPy API\"}",
+        "detail": "main",
+        "documentation": {}
+    }
+]
