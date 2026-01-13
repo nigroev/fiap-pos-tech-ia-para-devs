@@ -3,3 +3,4 @@ ipykernel==7.1.0
 pandas==2.3.3
 missingno==0.5.2
 seaborn==0.13.2
+matplotlib==3.10.7
