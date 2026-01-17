@@ -4,10 +4,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 app = FastAPI()
-modelo_salvo = pickle.load(open("pipe_rf_model.pkl", "rb"))
+modelo_salvo = pickle.load(open("pipe_lr_model.pkl", "rb"))
 
 class HealthData(BaseModel):
-    id: int
     age: int
     sbp: float
     hba1c: float
@@ -16,6 +15,7 @@ class HealthData(BaseModel):
     married: float
     high_bp: float
     chf: float
+    occupation: float
     smoking: float
 
 
@@ -26,10 +26,8 @@ def read_root():
 
 @app.post("/predict")
 def predict(data: HealthData):
-    # Criar DataFrame com os nomes das colunas esperadas pelo modelo
-    num_cols = ['RIDAGEYR_age', 'BPXSY1_sbp', 'LBXGH_hba1c', 'BMXBMI_bmi']
-    cat_cols = ['RIAGENDR_gender_bin', 'DMDMARTL_married_bin', 'BPQ020_high_bp_bin', 'MCQ160B_chf_bin', 'SMQ020_smoking_bin']
     
+    # Colunas numéricas e categóricas (MESMA ORDEM DO TREINAMENTO)
     input_data = pd.DataFrame({
         'RIDAGEYR_age': [data.age],
         'BPXSY1_sbp': [data.sbp],
@@ -39,8 +37,17 @@ def predict(data: HealthData):
         'DMDMARTL_married_bin': [data.married],
         'BPQ020_high_bp_bin': [data.high_bp],
         'MCQ160B_chf_bin': [data.chf],
+        'OCQ260_occupation': [data.occupation],
         'SMQ020_smoking_bin': [data.smoking]
     })
     
+    # Fazer predição e obter probabilidade
     prediction = modelo_salvo.predict(input_data)
-    return {"prediction_stroke": int(prediction[0]), "input": data}
+    prediction_proba = modelo_salvo.predict_proba(input_data)
+    
+    return {
+        "prediction_stroke": int(prediction[0]), # converter numpy.int64 para int
+        "probability_no_stroke": round(float(prediction_proba[0][0]), 4), # converter numpy.float64 para float
+        "probability_stroke": round(float(prediction_proba[0][1]), 4), # converter numpy.float64 para float
+        "input": data # retornar os dados de entrada para verificação
+    }
