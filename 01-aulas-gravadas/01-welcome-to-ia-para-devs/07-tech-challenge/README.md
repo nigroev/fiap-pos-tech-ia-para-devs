@@ -238,13 +238,42 @@ O notebook carrega os dados automaticamente via URLs do CDC. **Sem necessidade d
 
 ### Principais Achados
 
+#### 0. **Preparação dos Dados**
+
+![Texto alternativo](./assets/matrix-1.png "Visualização dos valores ausentes no DataFrame")
+
+XPTO1 
+
+![Texto alternativo](./assets/heatmap-1.png "Visualização do mapa de calor dos valores ausentes")
+
+XPTO2
+
+![Texto alternativo](./assets/matrix-2.png "Visualização dos valores ausentes no DataFrame")
+
+XPTO3
+
+
 #### 1. **Exploração de Dados (EDA)**
 - **Idade:** Distribuição normal; pacientes com AVC tendem a ser ~10 anos mais velhos
 - **Pressão arterial sistólica (sbp):** Forte preditor visual — valores mais altos associados a AVC
 - **Fatores de risco:** Hipertensão, insuficiência cardíaca e tabagismo mostram correlação positiva com AVC
 - **Balanceamento:** Dataset desbalanceado (~95% sem AVC, ~5% com AVC) → métricas como Recall e PR AUC são críticas
 
-#### 2. **Resultados de Modelagem**
+![Texto alternativo](./assets/heatmap-2.png "Visualização do mapa de correlação numéricas")
+
+XPTO4
+
+![Texto alternativo](./assets/barplot-1.png "Visualização da taxa de AVC por faixa etária")
+
+XPTO5
+
+![Texto alternativo](./assets/histograms-1.png "Visualização das variáveis numéricas")
+
+XPTO6
+
+#### 2. **Parameter Tunning e Avaliação Final**
+
+#### 3. **Resultados de Modelagem**
 
 **Importante:** Os modelos foram treinados com **dataset balanceado via undersampling** para melhorar a detecção de casos positivos (AVC).
 
