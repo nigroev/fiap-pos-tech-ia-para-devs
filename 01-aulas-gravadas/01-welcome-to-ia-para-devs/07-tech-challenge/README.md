@@ -227,6 +227,7 @@ O notebook carrega os dados automaticamente via URLs do CDC. **Sem necessidade d
 ## Resultados Obtidos
 
 ### Resumo Executivo
+
 - **Dataset**: Carregado, explorado e limpo com sucesso (~14,000+ registros válidos)
 - **EDA**: Visualizações de correlação, distribuições, taxas por grupo
 - **Pré-processamento**: Pipeline robusto implementado (imputação + scaling + encoding)
@@ -238,42 +239,110 @@ O notebook carrega os dados automaticamente via URLs do CDC. **Sem necessidade d
 
 ### Principais Achados
 
-#### 0. **Preparação dos Dados**
+#### 1. **Preparação dos Dados**
 
 ![Texto alternativo](./assets/matrix-1.png "Visualização dos valores ausentes no DataFrame")
 
-XPTO1 
+**Análise da Matriz de Valores Ausentes (Pré-limpeza):** 
+
+A visualização mostra o padrão de dados faltantes nas 12 colunas selecionadas do dataset NHANES inicial (~70.000+ registros). As linhas brancas representam valores presentes, enquanto as linhas pretas indicam dados ausentes (NaN). Observa-se que as colunas biomédicas (`LBXGH_hba1c`, `BPXSY1_sbp`, `BMXBMI_bmi`) apresentam padrões estruturais de missingness. Alguns participantes não realizaram exames laboratoriais ou medidas físicas. 
+
+As variáveis categóricas (`BPQ020_high_bp`, `MCQ160B_chf`, `MCQ160F_stroke`) têm completude superior, pois derivam de questionários autodeclarados. Este padrão é esperado em estudos populacionais como o NHANES, onde nem todos os participantes completam todas as etapas do protocolo. 
 
 ![Texto alternativo](./assets/heatmap-1.png "Visualização do mapa de calor dos valores ausentes")
 
-XPTO2
+**Análise do Heatmap de Correlação de Missingness:**
+
+O mapa de calor revela padrões de co-ocorrência entre valores ausentes. Células mais claras indicam alta correlação (quando uma variável está ausente, a outra também tende a estar).
+
+Destaca-se forte correlação entre `LBXGH_hba1c` (hemoglobina glicada) e `BPXSY1_sbp` (pressão arterial), sugerindo que participantes que não realizaram exames laboratoriais frequentemente também não tiveram medidas físicas coletadas.
+
+A variável `MCQ160F_stroke` (alvo) apresenta baixa correlação com outras missingness, indicando que o histórico de AVC foi reportado independentemente da realização de exames. Este padrão justifica a estratégia de **complete case analysis** (dropna), pois a impuação poderia introduzir viés sistemático em variáveis biomédicas estruturalmente relacionadas.
 
 ![Texto alternativo](./assets/matrix-2.png "Visualização dos valores ausentes no DataFrame")
 
-XPTO3
+**Análise da Matriz de Valores Ausentes (Pós-limpeza):** A estratégia adotada foi **remoção de linhas com qualquer valor ausente** (dropna), resultando em ~14.000 registros completos. Uma abordagem conservadora que prioriza qualidade dos dados sobre quantidade para modelagem supervisionada.
 
 
-#### 1. **Exploração de Dados (EDA)**
-- **Idade:** Distribuição normal; pacientes com AVC tendem a ser ~10 anos mais velhos
-- **Pressão arterial sistólica (sbp):** Forte preditor visual — valores mais altos associados a AVC
-- **Fatores de risco:** Hipertensão, insuficiência cardíaca e tabagismo mostram correlação positiva com AVC
-- **Balanceamento:** Dataset desbalanceado (~95% sem AVC, ~5% com AVC) → métricas como Recall e PR AUC são críticas
+#### 2. **Exploração de Dados (EDA)**
+
+- **Idade:** Distribuição normal; pacientes com AVC tendem a ser ~10 anos mais velhos;
+- **Pressão arterial sistólica (sbp):** Forte preditor visual — valores mais altos associados a AVC;
+- **Fatores de risco:** Hipertensão, insuficiência cardíaca e tabagismo mostram correlação positiva com AVC;
+- **Balanceamento:** Dataset desbalanceado (~95% sem AVC, ~5% com AVC) → métricas como Recall e PR AUC são críticas;
 
 ![Texto alternativo](./assets/heatmap-2.png "Visualização do mapa de correlação numéricas")
 
-XPTO4
+**Análise do Heatmap de Correlação entre Variáveis (Pós-processamento):**
+
+A matriz de correlação revela relações lineares entre as variáveis após transformação binária e limpeza dos dados (~14.000 registros).
+
+**(1)** `MCQ160F_stroke_bin` (alvo) apresenta correlações moderadas-baixas com as features `RIDAGEYR_age` (~0.09), `BPQ020_high_bp_bin` (~0.09) e `MCQ160B_chf_bin` (~0.10) são os preditores com maior correlação individual. Confirmando que a idade, hipertensão e insuficiência cardíaca são fatores de risco clássicos para AVC; 
+
+**(2)** Correlações inter-features são geralmente baixas (<0.35), indicando **baixa multicolinearidade**, exceção é `BPQ020_high_bp_bin` × `RIDAGEYR_age` (~0.35), esperado pois hipertensão aumenta com idade;
 
 ![Texto alternativo](./assets/barplot-1.png "Visualização da taxa de AVC por faixa etária")
 
-XPTO5
+**Análise da Taxa de AVC por Faixa Etária:**
+
+O gráfico de barras revela uma **relação exponencial entre idade e ocorrências de AVC**, padrão bem conhecido na literatura médica.
+
+**(1)** Faixas etárias jovens (0-30 anos) apresentam taxa de AVC **próxima de zero** (~0.002), confirmando que AVC é raro em populações jovens sem comorbidades severas; 
+
+**(2)** A partir dos **40 anos** há aceleração notável, taxa salta de ~0.004 (30-40 anos) para ~0.009 (40-50 anos), dobrando a cada década; 
+
+**(3)** Faixas **60-70 anos** (~0.025) e **70-80 anos** (~0.040) concentram a maior incidência, com **4% de prevalência** na população idosa, justifica o foco clínico em prevenção nesta coorte; 
+
+**(4)** Faixas 80+ e 90+ apresentam dados esparsos (barras ausentes/muito baixas), possivelmente devido a **viés de sobrevivência** e tamanho amostral reduzido. **Implicação para ML:** este padrão explica por que `RIDAGEYR_age` emerge como **feature mais importante** nos modelos, a idade captura ~70% da variância do risco de AVC sozinha, funcionando como proxy para envelhecimento vascular, acúmulo de comorbidades e fragilidade fisiológica.
 
 ![Texto alternativo](./assets/histograms-1.png "Visualização das variáveis numéricas")
 
-XPTO6
+**Análise das Distribuições das Variáveis Numéricas:**
 
-#### 2. **Parameter Tunning e Avaliação Final**
+Os histogramas (n=~14.000 registros pós-limpeza) revelam características importantes para modelagem: 
 
-#### 3. **Resultados de Modelagem**
+**(1)** `RIDAGEYR_age`: Distribuição aproximadamente uniforme/multimodal (20-65 anos), com concentração em adultos e idosos, refletindo desenho amostral do NHANES; ausência de assimetria extrema favorece algoritmos lineares; 
+
+**(2)** `BPXSY1_sbp` Distribuição **próxima à normal**, centrada em ~120 mmHg com desvio padrão ~18 mmHg, ligeira cauda direita (alguns valores >200 mmHg = hipertensão severa), padrão típico populacional; 
+
+**(3)** `LBXGH_hba1c` Distribuição **fortemente skewed à direita**, concentrada em 5-6% (normal/pré-diabético) com cauda longa até ~14% (diabetes severo), refletindo prevalência aumentada de diabetes em idosos; 
+
+**(4)** `BMXBMI_bmi` Distribuição **aproximadamente normal**, centrada em ~28 kg/m² (sobrepeso), com outliers >50 kg/m² (obesidade severa), simetria moderada. **Implicações para ML:** StandardScaler aplicado no pipeline é adequado para idade, pressão e IMC (distribuições próximas à normal); `LBXGH_hba1c` poderia beneficiar de transformação log (reduzir skewness), mas foi mantida para interpretabilidade clínica; ausência de distribuições extremamente bimodais favorece separação de classes por Logistic Regression; features escalonadas adequadamente suportam convergência eficiente de modelos lineares e árvores balanceadas.
+
+#### 3. **Escolhendo os modelos e treinando**
+
+![Texto alternativo](./assets/logistic-regression-x-random-forest.png "Logistic Regression X Random Forest")
+
+A ausência de correlações fortes (>0.70) entre features sugere que cada variável contribui com informação única para o modelo, favorecendo a performance de algoritmos lineares (Logistic Regression) e baseados em árvores (Random Forest). Este padrão justifica a manutenção de todas as features selecionadas na modelagem.
+
+#### 4. **Parameter Tunning e Avaliação Final**
+
+![Texto alternativo](./assets/barplot-2.png "Visualização desbalanceamento da classe alvo")
+
+**Análise do Desbalanceamento Inicial da Classe Alvo:**
+O gráfico revela um alto desbalanceamento. Aproximadamente 99% dos registros (cerca de 18.265 pacientes) não possuem histórico de AVC, enquanto apenas 1% (aproximadamente 188 pacientes) reportam AVC. Essa situação justifica a necessidade de estratégias de balanceamento como undersampling.
+
+![Texto alternativo](./assets/barplot-3.png "Visualização desbalanceamento da classe alvo")
+
+**Análise do Balanceamento Pós Undersampling:**
+Após aplicar undersampling na classe majoritária, o gráfico mostra uma distribuição praticamente 50/50 entre pacientes sem AVC e com AVC (aproximadamente 94 casos cada). 
+
+Este balanceamento artificial permite que o modelo aprenda padrões das duas classes com peso igual durante o treinamento, evitando viés para a classe majoritária. O ponto negativo é a redução de 18.265 para cerca de 188 registros totais, sacrificando volume de dados pela oportunidade de aprender melhor a classe minoritária. Este dataset balanceado foi utilizado para treinar os modelos finais reportados.
+
+![Texto alternativo](./assets/barh-1.png "Visualização das as principais permutações de importância")
+
+**Análise da Importância das Features por Permutação:**
+O gráfico de barras horizontais apresenta as 20 features mais importantes identificadas pelo Random Forest através de permutation importance com métrica ROC AUC.
+
+ A idade (RIDAGEYR_age) se destaca como preditor dominante com importância ~0.08, confirmando o padrão exponencial observado anteriormente na análise de taxa de AVC por faixa etária. 
+ 
+ As variáveis categóricas de hipertensão (BPQ020_high_bp_bin) aparecem em segunda posição (~0.035). 
+ 
+ Hemoglobina glicada (LBXGH_hba1c) e pressão arterial sistólica (BPXSY1_sbp) ocupam posições relevantes (~0.01-0.015), alinhados com fatores de risco clássicos de AVC. 
+ 
+ Variáveis demográficas (gênero, estado civil, ocupação) apresentam importância marginal (~0.005 ou menor), sugerindo que as características biomédicas são mais previsivo que características sociais para esta base de dados do NHANES.
+
+#### 5. **Resultados de Modelagem**
 
 **Importante:** Os modelos foram treinados com **dataset balanceado via undersampling** para melhorar a detecção de casos positivos (AVC).
 
@@ -301,7 +370,7 @@ XPTO6
 - Desvantagem: Perda de informação da classe majoritária
 - Produção: Modelo treinado em base balanceada foi serializado em `pipe_lr_model.pkl`
 
-#### 3. **Importância das Features**
+#### 6. **Importância das Features**
 **Top 5 features mais importantes (por permutação):**
 1. Idade (RIDAGEYR_age) — 0.032
 2. Pressão arterial sistólica (BPXSY1_sbp) — 0.025
@@ -309,7 +378,7 @@ XPTO6
 4. Histórico de insuficiência cardíaca (MCQ160B_chf) — 0.016
 5. Histórico de hipertensão (BPQ020_high_bp) — 0.014
 
-#### 4. **Implicações Clínicas**
+#### 7. **Implicações Clínicas**
 - **Modelo é viável para triagem inicial**: Recall ~72% significa capturar ~7 em 10 pacientes com AVC
 - **Precisão baixa**: Muitos falsos positivos (necessário confirmar com especialista)
 - **Uso recomendado**: **Ferramenta de apoio à decisão clínica, não substituição** do julgamento médico
