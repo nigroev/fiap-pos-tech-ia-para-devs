@@ -1,8 +1,8 @@
 # Tech Challenge - Fase 1: Diagnóstico de Acidente Vascular Cerebral (AVC) com Machine Learning
 
-Curso: Pós Tech IA para Devs
-Turma: 8IADT
-Funcional: RM369853
+* Curso: Pós Tech IA para Devs
+* Turma: 8IADT
+* Funcional: RM369853
 
 ## Visão Geral do Projeto
 
@@ -16,7 +16,13 @@ Construir uma solução com foco em IA para processamento de dados médicos, apl
 - Modelagem com múltiplas técnicas de classificação
 - Interpretação e comunicação de resultados
 
+---
+
+### Links
+
 * [Vídeo de apresentação do projeto](https://youtu.be/twPY-lL5yYM "Tech Challenge - Fase 1 AVC")
+
+* [Repositório do GitHub](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge "Repositório do GitHub")
 
 ---
 
@@ -248,7 +254,7 @@ O notebook carrega os dados automaticamente via URLs do CDC. **Sem necessidade d
 
 #### 1. **Preparação dos Dados**
 
-![Texto alternativo](./assets/matrix-1.png "Visualização dos valores ausentes no DataFrame")
+![Visualização dos valores ausentes no DataFrame](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/matrix-1.png "Visualização dos valores ausentes no DataFrame")
 
 **Análise da Matriz de Valores Ausentes (Pré-limpeza):** 
 
@@ -256,7 +262,7 @@ A visualização mostra o padrão de dados faltantes nas 12 colunas selecionadas
 
 As variáveis categóricas (`BPQ020_high_bp`, `MCQ160B_chf`, `MCQ160F_stroke`) têm completude um pouco melhor, pois derivam de questionários autodeclarados. Este padrão é esperado em estudos populacionais como o NHANES, onde nem todos os participantes completam todas as etapas dos questionários. 
 
-![Texto alternativo](./assets/heatmap-1.png "Visualização do mapa de calor dos valores ausentes")
+![Visualização do mapa de calor dos valores ausentes](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/heatmap-1.png "Visualização do mapa de calor dos valores ausentes")
 
 **Análise do Heatmap de Correlação de Missingness (faltantes):**
 
@@ -266,7 +272,7 @@ Destacaque entre a correlação entre `LBXGH_hba1c` (hemoglobina glicada) e `BPX
 
 A variável `MCQ160F_stroke` (alvo) apresenta baixa correlação com outras missingness (faltantes), indicando que o histórico de AVC foi reportado independentemente da realização de exames.
 
-![Texto alternativo](./assets/matrix-2.png "Visualização dos valores ausentes no DataFrame")
+![Visualização dos valores ausentes no DataFrame](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/matrix-2.png "Visualização dos valores ausentes no DataFrame")
 
 **Análise da Matriz de Valores Ausentes (Pós-limpeza):** A estratégia adotada foi **remoção de linhas com qualquer valor ausente** (dropna), resultando em ~14.000 registros completos. Uma abordagem conservadora que prioriza qualidade dos dados sobre quantidade para modelagem supervisionada.
 
@@ -278,7 +284,7 @@ A variável `MCQ160F_stroke` (alvo) apresenta baixa correlação com outras miss
 - **Fatores de risco:** Hipertensão, insuficiência cardíaca e tabagismo mostram correlação positiva com AVC;
 - **Balanceamento:** Dataset desbalanceado (~95% sem AVC, ~5% com AVC) → métricas como Recall e PR AUC são críticas;
 
-![Texto alternativo](./assets/heatmap-2.png "Visualização do mapa de correlação numéricas")
+![Visualização do mapa de correlação numéricas](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/heatmap-2.png "Visualização do mapa de correlação numéricas")
 
 **Análise do Heatmap de Correlação entre Variáveis (Pós-processamento):**
 
@@ -288,7 +294,7 @@ A matriz de correlação revela relações lineares entre as variáveis após tr
 
 **(2)** Correlações inter-features são geralmente baixas (<0.35), indicando **baixa multicolinearidade (baixa correlação)**, exceção é `BPQ020_high_bp_bin` × `RIDAGEYR_age` (~0.35), esperado pois hipertensão aumenta com idade;
 
-![Texto alternativo](./assets/barplot-1.png "Visualização da taxa de AVC por faixa etária")
+![Visualização da taxa de AVC por faixa etária](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/barplot-1.png "Visualização da taxa de AVC por faixa etária")
 
 **Análise da Taxa de AVC por Faixa Etária:**
 
@@ -302,7 +308,7 @@ O gráfico de barras revela uma **relação exponencial entre idade e ocorrênci
 
 **(4)** Faixas 80+ e 90+ apresentam dados esparsos (barras ausentes/muito baixas), possivelmente devido a **viés de sobrevivência** e tamanho amostral reduzido. **Implicação para ML:** este padrão explica por que `RIDAGEYR_age` emerge como **feature mais importante** nos modelos, a idade captura ~70% da variância do risco de AVC sozinha, funcionando como proxy para envelhecimento vascular, acúmulo de comorbidades e fragilidade fisiológica.
 
-![Texto alternativo](./assets/histograms-1.png "Visualização das variáveis numéricas")
+![Visualização das variáveis numéricas](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/histograms-1.png "Visualização das variáveis numéricas")
 
 **Análise das Distribuições das Variáveis Numéricas:**
 
@@ -318,19 +324,19 @@ Os histogramas (n=~14.000 registros pós-limpeza) revelam características impor
 
 #### 3. **Escolhendo os modelos e treinando**
 
-![Texto alternativo](./assets/logistic-regression-x-random-forest.png "Logistic Regression X Random Forest")
+![Logistic Regression X Random Forest](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/logistic-regression-x-random-forest.png "Logistic Regression X Random Forest")
 
 A ausência de correlações fortes (>0.70) entre features sugere que cada variável contribui com informação única para o modelo, favorecendo a performance de algoritmos lineares (Logistic Regression) e baseados em árvores (Random Forest). Este padrão justifica a manutenção de todas as features selecionadas na modelagem.
 
 #### 4. **Parameter Tunning e Avaliação Final**
 
-![Texto alternativo](./assets/barplot-2.png "Visualização desbalanceamento da classe alvo")
+![Visualização desbalanceamento da classe alvo](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/barplot-2.png "Visualização desbalanceamento da classe alvo")
 
 **Análise do Desbalanceamento Inicial da Classe Alvo:**
 
 O gráfico revela um alto desbalanceamento. Aproximadamente 99% dos registros (cerca de 30,254 pacientes) não possuem histórico de AVC, enquanto apenas 1% (aproximadamente 1201 pacientes) reportam AVC. Essa situação justifica a necessidade de estratégias de balanceamento como undersampling.
 
-![Texto alternativo](./assets/barplot-3.png "Visualização desbalanceamento da classe alvo")
+![Visualização balanceada da classe alvo](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/barplot-3.png "Visualização balanceada da classe alvo")
 
 **Análise do Balanceamento Pós Undersampling:**
 
@@ -338,7 +344,7 @@ Após aplicar undersampling na classe majoritária, o gráfico mostra uma distri
 
 Este balanceamento artificial permite que o modelo aprenda padrões das duas classes com peso igual durante o treinamento, evitando viés para a classe majoritária. O ponto negativo é a redução de 18.265 para cerca de 188 registros totais, sacrificando volume de dados pela oportunidade de aprender melhor a classe minoritária. Este dataset balanceado foi utilizado para treinar os modelos finais reportados.
 
-![Texto alternativo](./assets/barh-1.png "Visualização das as principais permutações de importância")
+![Visualização das as principais permutações de importância](https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/barh-1.png "Visualização das as principais permutações de importância")
 
 **Análise da Importância das Features por Permutação:**
 O gráfico de barras horizontais apresenta as 20 features mais importantes identificadas pelo Random Forest através de permutation importance com métrica ROC AUC.
