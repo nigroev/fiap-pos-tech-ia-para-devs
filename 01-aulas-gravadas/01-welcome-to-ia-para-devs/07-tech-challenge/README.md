@@ -1,5 +1,9 @@
 # Tech Challenge - Fase 1: Diagnóstico de Acidente Vascular Cerebral (AVC) com Machine Learning
 
+Curso: Pós Tech IA para Devs
+Turma: 8IADT
+Funcional: RM369853
+
 ## Visão Geral do Projeto
 
 Este projeto implementa um sistema inteligente de suporte ao diagnóstico para auxiliar na identificação de pacientes com risco de **Acidente Vascular Cerebral (AVC)** utilizando dados estruturados do NHANES (National Health and Nutrition Examination Survey). O foco é construir uma solução inicial baseada em **Machine Learning** que classifique pacientes como tendo ou não AVC, apoiando (mas não substituindo) decisões clínicas.
@@ -352,41 +356,41 @@ O gráfico de barras horizontais apresenta as 20 features mais importantes ident
 **Importante:** Os modelos foram treinados com **dataset balanceado via undersampling** para melhorar a detecção de casos positivos (AVC).
 
 **Regressão Logística (Baseline - Base Balanceada):**
-- ROC AUC: ~0.78
-- Recall: ~0.68 (captura ~68% dos verdadeiros positivos)
-- Precisão: ~0.15 (muitos falsos positivos)
-- F1-score: ~0.25
+- ROC AUC: 0.813
+- Recall: 0.75 (captura ~75% dos verdadeiros positivos)
+- Precisão: 0.74 (muitos falsos positivos)
+- F1-score: 0.74
 - **Modelo escolhido para produção** (API FastAPI)
 
 **Random Forest (Melhor desempenho - Base Balanceada):**
-- ROC AUC: ~0.82
-- Recall: ~0.72 (captura ~72% dos AVC verdadeiros)
-- Precisão: ~0.18 (melhorado vs. LR)
-- F1-score: ~0.30
+- ROC AUC: 0.800
+- Recall: 0.73 (captura ~73% dos AVC verdadeiros)
+- Precisão: 0.72 (melhorado vs. LR)
+- F1-score: 0.72
 
 **Estratégia de Balanceamento:**
 - **Método:** Undersampling da classe majoritária (sem AVC)
 - **Justificativa:** Dataset original tinha ~95% sem AVC, ~5% com AVC (desbalanceamento extremo)
-- **Impacto:** Redução de ~30,000 para ~600 registros, mas melhoria significativa em Recall
+- **Impacto:** Redução de ~30,000 para ~1200 registros, mas melhoria significativa em Recall
 - **Alternativa aplicada:** `class_weight='balanced'` nos modelos para ajuste automático
 
 **⚠️ Nota sobre Undersampling:**
 - Vantagem: Melhora Recall (crítico para diagnóstico médico)
 - Desvantagem: Perda de informação da classe majoritária
-- Produção: Modelo treinado em base balanceada foi serializado em `pipe_lr_model.pkl`
+- Produção: Modelo treinado em base balanceada foi serializado em `pipe_model.pkl`
 
 #### 6. **Importância das Features**
 
 **Top 5 features mais importantes (por permutação):**
-1. Idade (RIDAGEYR_age) — 0.032
-2. Pressão arterial sistólica (BPXSY1_sbp) — 0.025
-3. Hemoglobina glicada (LBXGH_hba1c) — 0.018
-4. Histórico de insuficiência cardíaca (MCQ160B_chf) — 0.016
-5. Histórico de hipertensão (BPQ020_high_bp) — 0.014
+1. Idade (RIDAGEYR_age) — 0.0419
+2. Ocupação (cat__OCQ260_occupation_0.0) — 0.0264
+3. Insuficiência cardíaca congestiva (cat__MCQ160B_chf_bin_1.0) — 0.0041
+4. Histórico de Glicohemoglobina (num__LBXGH_hba1c) — 0.0016
+5. Ocupação (cat__OCQ260_occupation_2.0) — 0.014
 
 #### 7. **Implicações Clínicas**
 
-- **Modelo é viável para triagem inicial**: Recall ~72% significa capturar ~7 em 10 pacientes com AVC
+- **Modelo é viável para triagem inicial**: Recall ~77% significa capturar ~7 em 10 pacientes com AVC
 - **Precisão baixa**: Muitos falsos positivos (necessário confirmar com especialista)
 - **Uso recomendado**: **Ferramenta de apoio à decisão clínica, não substituição** do julgamento médico
 
@@ -400,13 +404,13 @@ O gráfico de barras horizontais apresenta as 20 features mais importantes ident
 **RF vs. LR:**
 ```
             Logistic Regression    Random Forest
-ROC AUC              0.81              0.75
-Recall               0.74              0.73
+ROC AUC              0.81              0.80
+Recall               0.75              0.73
 Precisão             0.74              0.72
 F1-score             0.74              0.72
 ```
 
-**RF é superior** em todas as métricas. Ganho de ROC AUC de +0.04 é relevante em diagnóstico médico.
+**LR é superior** em todas as métricas. Ganho de ROC AUC de +0.01 é relevante em diagnóstico médico.
 
 #### 3.3 Importância de Features (Top 10)
 
