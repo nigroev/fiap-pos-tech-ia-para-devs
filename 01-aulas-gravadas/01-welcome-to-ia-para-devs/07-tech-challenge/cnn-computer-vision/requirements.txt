@@ -5,5 +5,5 @@ matplotlib==3.10.8
 scikit-learn==1.7.2
 tensorflow-cpu==2.20.0
 opencv-python-headless==4.13.0.90
-Pillow
-kagglehub
+Pillow==12.1.0
+kagglehub==0.4.0
