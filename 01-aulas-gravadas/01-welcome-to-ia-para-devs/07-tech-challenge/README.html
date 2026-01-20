@@ -385,10 +385,16 @@ code {
 <h3 id="links">Links</h3>
 <ul>
 <li>
-<p><a href="https://youtu.be/twPY-lL5yYM" title="Tech Challenge - Fase 1 AVC">Vídeo de apresentação do projeto</a></p>
+<p><a href="https://youtu.be/B7h-XVuymFs" title="Tech Challenge - Fase 1 AVC">Vídeo de apresentação do projeto</a>;</p>
 </li>
 <li>
-<p><a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge" title="Repositório do GitHub">Repositório do GitHub</a></p>
+<p><a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/m369853-tech-challenge-fase-1.ipynb" title="Notebook Computer Tech Challenge Fase 1">Notebook Computer Tech Challenge Fase 1</a>;</p>
+</li>
+<li>
+<p>EXTRA - <a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/cnn-computer-vision/m369853-tech-challenge-fase-1-extra.ipynb" title="Notebook Computer Visinio CNN">Notebook Computer Visinio CNN</a>;</p>
+</li>
+<li>
+<p><a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge" title="Repositório do GitHub">Repositório do GitHub</a>;</p>
 </li>
 </ul>
 <hr>
@@ -399,7 +405,6 @@ code {
 <li>pip (gerenciador de pacotes Python)</li>
 <li>Acesso à internet (para download dos dados NHANES)</li>
 </ul>
-<div class="page"></div>
 <h3 id="instala%C3%A7%C3%A3o-e-configura%C3%A7%C3%A3o">Instalação e Configuração</h3>
 <ol>
 <li>
@@ -434,7 +439,6 @@ code {
 </ul>
 </li>
 </ol>
-<div class="page"></div>
 <hr>
 <h2 id="api-rest-para-predi%C3%A7%C3%B5es">API REST para Predições</h2>
 <h3 id="executando-a-api-fastapi">Executando a API FastAPI</h3>
@@ -460,7 +464,6 @@ python -m fastapi dev main.py
   <span class="hljs-attr">"Hello"</span>: <span class="hljs-string">"World"</span>
 }
 </div></code></pre>
-<div class="page"></div>
 <h4 id="2-post-predict--predi%C3%A7%C3%A3o-de-risco-de-avc">2. <strong>POST /predict</strong> — Predição de Risco de AVC</h4>
 <p>Recebe dados de um paciente e retorna a predição de risco de AVC.</p>
 <p><strong>Request Body (JSON):</strong></p>
@@ -550,7 +553,6 @@ python -m fastapi dev main.py
 </tr>
 </tbody>
 </table>
-<div class="page"></div>
 <p><strong>Response (JSON):</strong></p>
 <pre class="hljs"><code><div>{
   <span class="hljs-attr">"prediction_stroke"</span>: <span class="hljs-number">0</span>,
@@ -590,7 +592,6 @@ python -m fastapi dev main.py
 <li>Sempre confirme casos de alto risco com avaliação clínica especializada e exames de imagem (CT/MRI)</li>
 <li>Considere falsos positivos/negativos nas decisões clínicas</li>
 </ul>
-<div class="page"></div>
 <h3 id="estrutura-de-arquivos">Estrutura de Arquivos</h3>
 <pre class="hljs"><code><div>tech-challenge-fase-1/
 ├── tech-challenge-fase-1.ipynb    # Notebook principal com EDA, modelagem e avaliação
@@ -599,7 +600,6 @@ python -m fastapi dev main.py
 ├── requirements.txt                # Dependências do projeto
 └── README.md                       # Este arquivo
 </div></code></pre>
-<div class="page"></div>
 <hr>
 <h2 id="dataset">Dataset</h2>
 <h3 id="fonte">Fonte</h3>
@@ -625,7 +625,6 @@ python -m fastapi dev main.py
 </ul>
 </li>
 </ul>
-<div class="page"></div>
 <h3 id="vari%C3%A1veis-selecionadas-n12-features--target">Variáveis Selecionadas (n=12 features + target)</h3>
 <table>
 <thead>
@@ -719,7 +718,6 @@ python -m fastapi dev main.py
 <li><strong>Amostra final (após limpeza):</strong> ~30,000+ registros válidos</li>
 <li><strong>Prevalência de AVC:</strong> ~4–5% (classe minoritária — desbalanceada)</li>
 </ul>
-<div class="page"></div>
 <hr>
 <h2 id="resultados-obtidos">Resultados Obtidos</h2>
 <h3 id="resumo-executivo">Resumo Executivo</h3>
@@ -754,7 +752,6 @@ python -m fastapi dev main.py
 <li><strong>Balanceamento:</strong> Dataset desbalanceado (~95% sem AVC, ~5% com AVC) → métricas como Recall e PR AUC são críticas;</li>
 </ul>
 <p><img src="https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/heatmap-2.png" alt="Visualização do mapa de correlação numéricas" title="Visualização do mapa de correlação numéricas"></p>
-<div class="page"></div>
 <p><strong>Análise do Heatmap de Correlação entre Variáveis (Pós-processamento):</strong></p>
 <p>A matriz de correlação revela relações lineares entre as variáveis após transformação binária e limpeza dos dados (~14.000 registros).</p>
 <p><strong>(1)</strong> <code>MCQ160F_stroke_bin</code> (alvo) apresenta correlações moderadas-baixas com as features <code>RIDAGEYR_age</code> (~0.09), <code>BPQ020_high_bp_bin</code> (~0.09) e <code>MCQ160B_chf_bin</code> (~0.10) são os preditores com maior correlação individual. Confirmando que a idade, hipertensão e insuficiência cardíaca são fatores de risco clássicos para AVC;</p>
@@ -773,22 +770,18 @@ python -m fastapi dev main.py
 <p><strong>(2)</strong> <code>BPXSY1_sbp</code> Distribuição <strong>próxima à normal</strong>, centrada em ~120 mmHg com desvio padrão ~18 mmHg, ligeira cauda direita (alguns valores &gt;200 mmHg = hipertensão severa), padrão típico populacional;</p>
 <p><strong>(3)</strong> <code>LBXGH_hba1c</code> Distribuição <strong>fortemente skewed à direita</strong>, concentrada em 5-6% (normal/pré-diabético) com cauda longa até ~14% (diabetes severo), refletindo prevalência aumentada de diabetes em idosos;</p>
 <p><strong>(4)</strong> <code>BMXBMI_bmi</code> Distribuição <strong>aproximadamente normal</strong>, centrada em ~28 kg/m² (sobrepeso), com outliers &gt;50 kg/m² (obesidade severa), simetria moderada. <strong>Implicações para ML:</strong> StandardScaler aplicado no pipeline é adequado para idade, pressão e IMC (distribuições próximas à normal); <code>LBXGH_hba1c</code> poderia beneficiar de transformação log (reduzir skewness), mas foi mantida para interpretabilidade clínica; ausência de distribuições extremamente bimodais favorece separação de classes por Logistic Regression; features escalonadas adequadamente suportam convergência eficiente de modelos lineares e árvores balanceadas.</p>
-<div class="page"></div>
 <h4 id="3-escolhendo-os-modelos-e-treinando">3. <strong>Escolhendo os modelos e treinando</strong></h4>
 <p><img src="https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/logistic-regression-x-random-forest.png" alt="Logistic Regression X Random Forest" title="Logistic Regression X Random Forest"></p>
 <p>A ausência de correlações fortes (&gt;0.70) entre features sugere que cada variável contribui com informação única para o modelo, favorecendo a performance de algoritmos lineares (Logistic Regression) e baseados em árvores (Random Forest). Este padrão justifica a manutenção de todas as features selecionadas na modelagem.</p>
-<div class="page"></div>
 <h4 id="4-parameter-tunning-e-avalia%C3%A7%C3%A3o-final">4. <strong>Parameter Tunning e Avaliação Final</strong></h4>
 <p><img src="https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/barplot-2.png" alt="Visualização desbalanceamento da classe alvo" title="Visualização desbalanceamento da classe alvo"></p>
 <p><strong>Análise do Desbalanceamento Inicial da Classe Alvo:</strong></p>
 <p>O gráfico revela um alto desbalanceamento. Aproximadamente 99% dos registros (cerca de 30,254 pacientes) não possuem histórico de AVC, enquanto apenas 1% (aproximadamente 1201 pacientes) reportam AVC. Essa situação justifica a necessidade de estratégias de balanceamento como undersampling.</p>
 <p><img src="https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/barplot-3.png" alt="Visualização balanceada da classe alvo" title="Visualização balanceada da classe alvo"></p>
-<div class="page"></div>
 <p><strong>Análise do Balanceamento Pós Undersampling:</strong></p>
 <p>Após aplicar undersampling na classe majoritária, o gráfico mostra uma distribuição praticamente 50/50 entre pacientes sem AVC e com AVC (aproximadamente 1201 casos cada).</p>
 <p>Este balanceamento artificial permite que o modelo aprenda padrões das duas classes com peso igual durante o treinamento, evitando viés para a classe majoritária. O ponto negativo é a redução de 18.265 para cerca de 188 registros totais, sacrificando volume de dados pela oportunidade de aprender melhor a classe minoritária. Este dataset balanceado foi utilizado para treinar os modelos finais reportados.</p>
 <p><img src="https://raw.githubusercontent.com/paulosobral/fiap-pos-tech-ia-para-devs/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/assets/barh-1.png" alt="Visualização das as principais permutações de importância" title="Visualização das as principais permutações de importância"></p>
-<div class="page"></div>
 <p><strong>Análise da Importância das Features por Permutação:</strong>
 O gráfico de barras horizontais apresenta as 20 features mais importantes identificadas pelo Random Forest através de permutation importance com métrica ROC AUC.</p>
 <p>A idade (RIDAGEYR_age) se destaca como preditor dominante com importância ~0.08, confirmando o padrão exponencial observado anteriormente na análise de taxa de AVC por faixa etária.</p>
@@ -825,7 +818,6 @@ O gráfico de barras horizontais apresenta as 20 features mais importantes ident
 <li>Desvantagem: Perda de informação da classe majoritária</li>
 <li>Produção: Modelo treinado em base balanceada foi serializado em <code>pipe_model.pkl</code></li>
 </ul>
-<div class="page"></div>
 <h4 id="6-import%C3%A2ncia-das-features">6. <strong>Importância das Features</strong></h4>
 <p><strong>Top 5 features mais importantes (por permutação):</strong></p>
 <ol>
@@ -841,10 +833,9 @@ O gráfico de barras horizontais apresenta as 20 features mais importantes ident
 <li><strong>Precisão baixa</strong>: Muitos falsos positivos (necessário confirmar com especialista)</li>
 <li><strong>Uso recomendado</strong>: <strong>Ferramenta de apoio à decisão clínica, não substituição</strong> do julgamento médico</li>
 </ul>
-<div class="page"></div>
 <hr>
 <h2 id="relat%C3%B3rio-t%C3%A9cnico">Relatório Técnico</h2>
-<h4 id="32-interpreta%C3%A7%C3%A3o-de-resultados">8.1 Interpretação de Resultados</h4>
+<h4 id="81-interpreta%C3%A7%C3%A3o-de-resultados">8.1 Interpretação de Resultados</h4>
 <p><strong>RF vs. LR:</strong></p>
 <pre class="hljs"><code><div>            Logistic Regression    Random Forest
 ROC AUC              0.81              0.80
@@ -853,7 +844,7 @@ Precisão             0.74              0.72
 F1-score             0.74              0.72
 </div></code></pre>
 <p><strong>LR é superior</strong> em todas as métricas. Ganho de ROC AUC de +0.01 é relevante em diagnóstico médico.</p>
-<h4 id="33-import%C3%A2ncia-de-features-top-10">8.2 Importância de Features (Top 10)</h4>
+<h4 id="82-import%C3%A2ncia-de-features-top-10">8.2 Importância de Features (Top 10)</h4>
 <p><strong>Método:</strong> Permutação importance com 30 repetiçõesScoring: ROC AUC (alinhado com métrica principal)</p>
 <ol>
 <li>
@@ -893,7 +884,137 @@ F1-score             0.74              0.72
 <li>Fatores demográficos (gênero, estado civil) têm impacto menor;</li>
 <li>Combinar idade + pressão + glicemia captura ~70% da importância total;</li>
 </ul>
-<div class="page"></div>
+<hr>
+<h2 id="extra-classifica%C3%A7%C3%A3o-de-avc-em-tomografias-ct-com-vis%C3%A3o-computacional">Extra: Classificação de AVC em Tomografias (CT) com Visão Computacional</h2>
+<h3 id="descri%C3%A7%C3%A3o">Descrição</h3>
+<p>O notebook <a href="cnn-computer-vision/tech-challenge-fase-1-extra.ipynb">tech-challenge-fase-1-extra.ipynb</a> implementa um sistema de <strong>classificação binária de AVC a partir de <a href="https://www.kaggle.com/datasets/ozguraslank/brain-stroke-ct-dataset">imagens de tomografia computadorizada (CT)</a></strong> utilizando técnicas de visão computacional e deep learning. Este projeto complementa a análise de dados estruturados do projeto principal, explorando a aplicação de Machine Learning em dados não estruturados (imagens médicas).</p>
+<p><strong>Base de dados:</strong> Kaggle Brain Stroke CT Image Dataset (<code>afridirahman/brain-stroke-ct-image-dataset</code>)</p>
+<h3 id="bibliotecas-utilizadas">Bibliotecas Utilizadas</h3>
+<table>
+<thead>
+<tr>
+<th>Biblioteca</th>
+<th>Versão</th>
+<th>Função</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>numpy</code></td>
+<td>2.3.5</td>
+<td>Processamento de arrays e operações numéricas</td>
+</tr>
+<tr>
+<td><code>matplotlib</code></td>
+<td>3.10.8</td>
+<td>Visualização de dados e gráficos</td>
+</tr>
+<tr>
+<td><code>opencv-python-headless</code></td>
+<td>4.13.0.90</td>
+<td>Processamento de imagens (filtros Blur, Sobel)</td>
+</tr>
+<tr>
+<td><code>Pillow</code></td>
+<td>12.1.0</td>
+<td>Manipulação e carregamento de imagens</td>
+</tr>
+<tr>
+<td><code>scikit-learn</code></td>
+<td>1.7.2</td>
+<td>Modelo RandomForest e métricas de avaliação</td>
+</tr>
+<tr>
+<td><code>tensorflow-cpu</code></td>
+<td>2.20.0</td>
+<td>Redes neurais (MLP e CNN)</td>
+</tr>
+<tr>
+<td><code>kagglehub</code></td>
+<td>0.4.0</td>
+<td>Download automático do dataset do Kaggle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="algoritmos-de-treinamento">Algoritmos de Treinamento</h3>
+<ol>
+<li>
+<p><strong>RandomForestClassifier (scikit-learn):</strong> Ensemble de árvores de decisão com 300 estimadores e balanceamento automático de classes. As imagens são achatadas (flatten) para vetores de 16.384 features (128×128 pixels).</p>
+</li>
+<li>
+<p><strong>Rede Neural Tradicional MLP/Dense (TensorFlow):</strong> Arquitetura fully-connected com 3 camadas densas (256→128→64 neurônios) e ativação ReLU, otimizada com Adam e função de perda binary_crossentropy.</p>
+</li>
+<li>
+<p><strong>Rede Neural Convolucional CNN (TensorFlow):</strong> Arquitetura com 3 blocos convolucionais (32→64→128 filtros 3×3) intercalados com MaxPooling 2×2, seguidos de camada densa de 128 neurônios. Processa imagens em formato (128, 128, 1) preservando informação espacial.</p>
+</li>
+</ol>
+<h3 id="interpreta%C3%A7%C3%A3o-de-resultados-extra">Interpretação de Resultados (Extra)</h3>
+<pre class="hljs"><code><div>==================================================
+COMPARAÇÃO DE ACURÁCIA - Classificação de AVC (CT)
+==================================================
+RandomForest:                    0.9701
+Rede Neural Tradicional (MLP):   0.9042
+Rede Neural Convolucional (CNN): 0.9541
+==================================================
+</div></code></pre>
+<p><strong>Análise Comparativa:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Acurácia</th>
+<th>Observações</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RandomForest</strong></td>
+<td><strong>97.01%</strong></td>
+<td>Melhor desempenho geral</td>
+</tr>
+<tr>
+<td>CNN</td>
+<td>95.41%</td>
+<td>Segundo melhor, próximo ao RF</td>
+</tr>
+<tr>
+<td>MLP/Dense</td>
+<td>90.42%</td>
+<td>Performance inferior às demais</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Insights:</strong></p>
+<ol>
+<li>
+<p><strong>RandomForest lidera com 97.01%:</strong> Resultado notável, considerando que CNNs são tipicamente superiores em tarefas de visão computacional. Possíveis explicações:</p>
+<ul>
+<li>Dataset relativamente pequeno favorece modelos com menos parâmetros</li>
+<li>Imagens de CT podem ter padrões texturais que árvores capturam bem via features achatadas</li>
+<li>O balanceamento de classes (<code>class_weight='balanced'</code>) beneficiou o RF</li>
+<li>300 estimadores proporcionam robustez e reduzem overfitting</li>
+</ul>
+</li>
+<li>
+<p><strong>CNN supera MLP significativamente (+4.99%):</strong> Após 50 épocas de treinamento, a CNN demonstrou sua capacidade de extrair features espaciais relevantes das tomografias:</p>
+<ul>
+<li>Camadas convolucionais capturam bordas, texturas e padrões característicos de lesões cerebrais</li>
+<li>MaxPooling preserva as features mais importantes enquanto reduz dimensionalidade</li>
+<li>A arquitetura hierárquica (32→64→128 filtros) permite aprender representações cada vez mais abstratas</li>
+</ul>
+</li>
+<li>
+<p><strong>MLP com menor acurácia (90.42%):</strong> A rede densa tradicional não consegue explorar a estrutura espacial das imagens:</p>
+<ul>
+<li>Flatten das imagens perde informação de vizinhança entre pixels</li>
+<li>10 épocas podem ser insuficientes para convergência completa</li>
+<li>Arquitetura mais simples limita capacidade de representação</li>
+</ul>
+</li>
+<li>
+<p><strong>Acurácia geral elevada (~90-97%):</strong> Indica que as imagens de CT possuem características visuais distintas entre casos de AVC e não-AVC, permitindo boa separação mesmo com modelos relativamente simples.</p>
+</li>
+</ol>
 <hr>
 <h2 id="refer%C3%AAncias">Referências</h2>
 <ol>
@@ -904,6 +1025,9 @@ F1-score             0.74              0.72
 <li>Nature Research. Machine learning para risco cardiovascular — https://www.nature.com/articles/s41598-024-61665-4</li>
 <li>Journal of Health Informatics. AVC diagnosis — https://jhi.sbis.org.br/index.php/jhi-sbis/article/view/980</li>
 <li>Nature Research 2025. AVC modeling — https://www.nature.com/articles/s41598-025-01855-w</li>
+<li>Atlas Grand Challenge - https://atlas.grand-challenge.org/</li>
+<li>Notebook Atlas Grand Challenge - https://github.com/npnl/isles_2022/blob/main/ISLES_Example.ipynb</li>
+<li>EfficientNetB0-Stroke Prediction-98.72 https://www.kaggle.com/code/abdallahwagih/efficientnetb0-stroke-prediction-98-72</li>
 </ol>
 <hr>
 

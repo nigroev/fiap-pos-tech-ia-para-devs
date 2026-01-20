@@ -20,9 +20,13 @@ Construir uma solução com foco em IA para processamento de dados médicos, apl
 
 ### Links
 
-* [Vídeo de apresentação do projeto](https://youtu.be/twPY-lL5yYM "Tech Challenge - Fase 1 AVC")
+* [Vídeo de apresentação do projeto](https://youtu.be/B7h-XVuymFs "Tech Challenge - Fase 1 AVC");
 
-* [Repositório do GitHub](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge "Repositório do GitHub")
+* [Notebook Computer Tech Challenge Fase 1](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/m369853-tech-challenge-fase-1.ipynb "Notebook Computer Tech Challenge Fase 1");
+
+* EXTRA - [Notebook Computer Visinio CNN](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/cnn-computer-vision/m369853-tech-challenge-fase-1-extra.ipynb "Notebook Computer Visinio CNN");
+
+* [Repositório do GitHub](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge "Repositório do GitHub");
 
 ---
 
@@ -448,7 +452,7 @@ F1-score             0.74              0.72
 
 ### Descrição
 
-O notebook [`tech-challenge-fase-1-extra.ipynb`](cnn-computer-vision/tech-challenge-fase-1-extra.ipynb) implementa um sistema de **classificação binária de AVC a partir de imagens de tomografia computadorizada (CT)** utilizando técnicas de visão computacional e deep learning. Este projeto complementa a análise de dados estruturados do projeto principal, explorando a aplicação de Machine Learning em dados não estruturados (imagens médicas).
+O notebook [tech-challenge-fase-1-extra.ipynb](cnn-computer-vision/tech-challenge-fase-1-extra.ipynb) implementa um sistema de **classificação binária de AVC a partir de [imagens de tomografia computadorizada (CT)](https://www.kaggle.com/datasets/ozguraslank/brain-stroke-ct-dataset)** utilizando técnicas de visão computacional e deep learning. Este projeto complementa a análise de dados estruturados do projeto principal, explorando a aplicação de Machine Learning em dados não estruturados (imagens médicas).
 
 **Base de dados:** Kaggle Brain Stroke CT Image Dataset (`afridirahman/brain-stroke-ct-image-dataset`)
 
@@ -525,5 +529,6 @@ Rede Neural Convolucional (CNN): 0.9541
 7. Nature Research 2025. AVC modeling — https://www.nature.com/articles/s41598-025-01855-w
 8. Atlas Grand Challenge - https://atlas.grand-challenge.org/
 9. Notebook Atlas Grand Challenge - https://github.com/npnl/isles_2022/blob/main/ISLES_Example.ipynb
+10. EfficientNetB0-Stroke Prediction-98.72 https://www.kaggle.com/code/abdallahwagih/efficientnetb0-stroke-prediction-98-72
 
 ---
