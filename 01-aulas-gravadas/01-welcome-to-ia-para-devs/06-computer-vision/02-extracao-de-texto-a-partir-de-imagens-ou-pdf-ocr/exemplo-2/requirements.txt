@@ -1,0 +1,4 @@
+jupyter==1.1.1
+ipykernel==7.1.0
+opencv-python==4.13.0.90
+matplotlib==3.10.7
