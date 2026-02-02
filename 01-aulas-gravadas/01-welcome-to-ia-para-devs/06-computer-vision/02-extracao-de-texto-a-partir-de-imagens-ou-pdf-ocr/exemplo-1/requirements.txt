@@ -1,3 +1,2 @@
 opencv-python==4.13.0.90
 pytesseract==0.3.13
-matplotlib==3.10.7
