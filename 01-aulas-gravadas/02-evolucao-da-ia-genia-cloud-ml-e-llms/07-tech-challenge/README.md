@@ -1,4 +1,4 @@
-# Tech Challenge - Fase 1: Diagnóstico de Acidente Vascular Cerebral (AVC) com Machine Learning
+# Tech Challenge - Fase 2: Otimização de modelos de diagnóstico (AVC)
 
 * Curso: Pós Tech IA para Devs
 * Turma: 8IADT
