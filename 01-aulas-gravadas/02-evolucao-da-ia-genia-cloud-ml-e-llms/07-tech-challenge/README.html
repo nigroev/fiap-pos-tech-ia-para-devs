@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>README.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="tech-challenge---fase-1-diagn%C3%B3stico-de-acidente-vascular-cerebral-avc-com-machine-learning">Tech Challenge - Fase 1: Diagnóstico de Acidente Vascular Cerebral (AVC) com Machine Learning</h1>
+<ul>
+<li>Curso: Pós Tech IA para Devs</li>
+<li>Turma: 8IADT</li>
+<li>Funcional: RM369853</li>
+</ul>
+<h2 id="vis%C3%A3o-geral-do-projeto">Visão Geral do Projeto</h2>
+<p>Este projeto implementa um sistema inteligente de suporte ao diagnóstico para auxiliar na identificação de pacientes com risco de <strong>Acidente Vascular Cerebral (AVC)</strong> utilizando dados estruturados do NHANES (National Health and Nutrition Examination Survey). O sistema combina <strong>Machine Learning clássico</strong> com <strong>otimização por Algoritmo Genético (GA)</strong> para busca de hiperparâmetros e <strong>integração com LLMs</strong> para interpretação dos resultados em linguagem natural, apoiando (mas não substituindo) decisões clínicas.</p>
+<h3 id="objetivo">Objetivo</h3>
+<p>Construir uma solução com foco em IA para processamento de dados médicos, aplicando fundamentos essenciais de Machine Learning (ML), algoritmos genéticos e LLMs, demonstrando:</p>
+<ul>
+<li>Exploração e tratamento de dados médicos reais</li>
+<li>Pipeline robusto de pré-processamento</li>
+<li>Modelagem com múltiplas técnicas de classificação</li>
+<li><strong>Otimização de hiperparâmetros via Algoritmo Genético (GA)</strong> com scorer customizado (F-beta, β=1.5) para maximizar Recall sem degradar Precision</li>
+<li><strong>Integração com LLMs</strong> para geração de explicações em linguagem natural dos diagnósticos</li>
+<li>Interpretação e comunicação de resultados</li>
+</ul>
+<hr>
+<h3 id="links">Links</h3>
+<h4 id="fase-1">Fase 1</h4>
+<ul>
+<li>
+<p><a href="https://youtu.be/B7h-XVuymFs" title="Tech Challenge - Fase 1 AVC">Fase 1 — Vídeo de apresentação do projeto</a>;</p>
+</li>
+<li>
+<p><a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/rm369853-tech-challenge-fase-1.ipynb" title="Notebook Tech Challenge Fase 1">Fase 1 — Notebook Tech Challenge</a>;</p>
+</li>
+<li>
+<p>EXTRA - <a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge/cnn-computer-vision/m369853-tech-challenge-fase-1-extra.ipynb" title="Notebook Computer Vision CNN">Fase 1 — Notebook Computer Vision CNN</a>;</p>
+</li>
+</ul>
+<h4 id="fase-2">Fase 2</h4>
+<ul>
+<li>
+<p><a href="https://youtu.be/gmO5QkQ1pzQ">Fase 2 — Vídeo de apresentação do projeto</a></p>
+</li>
+<li>
+<p><a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/rm369853-tech-challenge-fase-2.ipynb" title="Notebook Tech Challenge Fase 2">Fase 2 — Notebook Tech Challenge</a>;</p>
+</li>
+</ul>
+<h4 id="geral">Geral</h4>
+<ul>
+<li><a href="https://github.com/paulosobral/fiap-pos-tech-ia-para-devs" title="Repositório do GitHub">Repositório do GitHub</a>;</li>
+</ul>
+<hr>
+<h2 id="instru%C3%A7%C3%B5es-de-execu%C3%A7%C3%A3o">Instruções de Execução</h2>
+<h3 id="pr%C3%A9-requisitos">Pré-requisitos</h3>
+<ul>
+<li>Python 3.10+</li>
+<li>pip (gerenciador de pacotes Python)</li>
+<li>Acesso à internet (para download dos dados NHANES)</li>
+</ul>
+<h3 id="instala%C3%A7%C3%A3o-e-configura%C3%A7%C3%A3o">Instalação e Configuração</h3>
+<ol>
+<li>
+<p><strong>Clonar ou acessar o repositório:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-built_in">cd</span> /home/user/workspaces/fiap-pos-tech-ia-para-devs/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge
+</div></code></pre>
+</li>
+<li>
+<p><strong>Criar e ativar um ambiente virtual (recomendado):</strong></p>
+<pre class="hljs"><code><div>python -m venv venv
+<span class="hljs-built_in">source</span> venv/bin/activate  <span class="hljs-comment"># No Windows: venv\Scripts\activate</span>
+</div></code></pre>
+</li>
+<li>
+<p><strong>Instalar dependências:</strong></p>
+<pre class="hljs"><code><div>pip install -r requirements.txt
+</div></code></pre>
+</li>
+<li>
+<p><strong>Executar o notebook:</strong></p>
+<pre class="hljs"><code><div>jupyter notebook tech-challenge-fase-1.ipynb
+</div></code></pre>
+<p>Ou, se usar JupyterLab:</p>
+<pre class="hljs"><code><div>jupyter lab tech-challenge-fase-1.ipynb
+</div></code></pre>
+</li>
+<li>
+<p><strong>Executar todas as células:</strong></p>
+<ul>
+<li>Navegue até <code>Cell &gt; Run All</code> ou pressione <code>Ctrl+Shift+Enter</code></li>
+<li>A execução pode levar ~10-15 minutos na primeira vez (carregamento dos dados NHANES)</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="api-rest-para-predi%C3%A7%C3%B5es">API REST para Predições</h2>
+<h3 id="executando-a-api-fastapi">Executando a API FastAPI</h3>
+<p>Após treinar o modelo no notebook e gerar o arquivo <code>pipe_lr_model.pkl</code>, você pode iniciar a API para realizar predições em tempo real:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Certifique-se de estar no diretório do projeto com o ambiente virtual ativado</span>
+python -m fastapi dev main.py
+</div></code></pre>
+<p>A API estará disponível em: <strong>http://localhost:8000</strong></p>
+<h3 id="documenta%C3%A7%C3%A3o-interativa-swagger-ui">Documentação Interativa (Swagger UI)</h3>
+<p>Acesse a interface interativa para testar os endpoints:</p>
+<ul>
+<li><strong>Swagger UI:</strong> http://localhost:8000/docs</li>
+<li><strong>ReDoc:</strong> http://localhost:8000/redoc</li>
+</ul>
+<h3 id="endpoints-dispon%C3%ADveis">Endpoints Disponíveis</h3>
+<h4 id="1-get---health-check">1. <strong>GET /</strong> — Health Check</h4>
+<p>Verifica se a API está funcionando.</p>
+<p><strong>Request:</strong></p>
+<pre class="hljs"><code><div>curl http://localhost:8000/
+</div></code></pre>
+<p><strong>Response:</strong></p>
+<pre class="hljs"><code><div>{
+  <span class="hljs-attr">"Hello"</span>: <span class="hljs-string">"World"</span>
+}
+</div></code></pre>
+<h4 id="2-post-predict--predi%C3%A7%C3%A3o-de-risco-de-avc">2. <strong>POST /predict</strong> — Predição de Risco de AVC</h4>
+<p>Recebe dados de um paciente e retorna a predição de risco de AVC.</p>
+<p><strong>Request Body (JSON):</strong></p>
+<pre class="hljs"><code><div>{
+  <span class="hljs-attr">"age"</span>: <span class="hljs-number">67</span>,
+  <span class="hljs-attr">"sbp"</span>: <span class="hljs-number">128.0</span>,
+  <span class="hljs-attr">"hba1c"</span>: <span class="hljs-number">9.2</span>,
+  <span class="hljs-attr">"bmi"</span>: <span class="hljs-number">32.0</span>,
+  <span class="hljs-attr">"gender"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"married"</span>: <span class="hljs-number">1.0</span>,
+  <span class="hljs-attr">"high_bp"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"chf"</span>: <span class="hljs-number">0</span>,
+  <span class="hljs-attr">"occupation"</span>: <span class="hljs-number">5.0</span>,
+  <span class="hljs-attr">"smoking"</span>: <span class="hljs-number">1</span>
+}
+</div></code></pre>
+<p><strong>Descrição dos Campos:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+<th>Valores</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>age</code></td>
+<td>int</td>
+<td>Idade em anos</td>
+<td>0-150</td>
+</tr>
+<tr>
+<td><code>sbp</code></td>
+<td>float</td>
+<td>Pressão arterial sistólica (mmHg)</td>
+<td>72-228</td>
+</tr>
+<tr>
+<td><code>hba1c</code></td>
+<td>float</td>
+<td>Hemoglobina glicada (%)</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>bmi</code></td>
+<td>float</td>
+<td>Índice de Massa Corporal</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>gender</code></td>
+<td>float</td>
+<td>Gênero</td>
+<td>1 = Masculino, 0 = Feminino</td>
+</tr>
+<tr>
+<td><code>married</code></td>
+<td>float</td>
+<td>Estado civil</td>
+<td>1 = Já foi casado, 0 = Nunca casou</td>
+</tr>
+<tr>
+<td><code>high_bp</code></td>
+<td>float</td>
+<td>Histórico de hipertensão</td>
+<td>1 = Sim, 0 = Não</td>
+</tr>
+<tr>
+<td><code>chf</code></td>
+<td>float</td>
+<td>Insuficiência cardíaca congestiva</td>
+<td>1 = Sim, 0 = Não</td>
+</tr>
+<tr>
+<td><code>occupation</code></td>
+<td>float</td>
+<td>Situação profissional</td>
+<td>1-5 (categorias)</td>
+</tr>
+<tr>
+<td><code>smoking</code></td>
+<td>float</td>
+<td>Histórico de tabagismo</td>
+<td>1 = Sim, 0 = Não</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Response (JSON):</strong></p>
+<pre class="hljs"><code><div>{
+  <span class="hljs-attr">"prediction_stroke"</span>: <span class="hljs-number">0</span>,
+  <span class="hljs-attr">"probability_no_stroke"</span>: <span class="hljs-number">0.8234</span>,
+  <span class="hljs-attr">"probability_stroke"</span>: <span class="hljs-number">0.1766</span>,
+  <span class="hljs-attr">"input"</span>: {
+    <span class="hljs-attr">"age"</span>: <span class="hljs-number">67</span>,
+    <span class="hljs-attr">"sbp"</span>: <span class="hljs-number">128.0</span>,
+    <span class="hljs-attr">"hba1c"</span>: <span class="hljs-number">9.2</span>,
+    <span class="hljs-attr">"bmi"</span>: <span class="hljs-number">32.0</span>,
+    <span class="hljs-attr">"gender"</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">"married"</span>: <span class="hljs-number">1.0</span>,
+    <span class="hljs-attr">"high_bp"</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">"chf"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"occupation"</span>: <span class="hljs-number">5.0</span>,
+    <span class="hljs-attr">"smoking"</span>: <span class="hljs-number">1</span>
+  }
+}
+</div></code></pre>
+<p><strong>Interpretação da Response:</strong></p>
+<ul>
+<li><code>prediction_stroke</code>: <strong>0</strong> = Sem risco de AVC, <strong>1</strong> = Com risco de AVC</li>
+<li><code>probability_no_stroke</code>: Probabilidade de NÃO ter AVC (0-1)</li>
+<li><code>probability_stroke</code>: Probabilidade de TER AVC (0-1)</li>
+<li><code>input</code>: Eco dos dados enviados para validação</li>
+</ul>
+<h3 id="integra%C3%A7%C3%A3o-com-sistemas-cl%C3%ADnicos">Integração com Sistemas Clínicos</h3>
+<p>A API foi projetada para ser integrada em sistemas hospitalares/clínicos:</p>
+<ol>
+<li><strong>Sistema de Prontuário Eletrônico (EMR):</strong> Envie dados do paciente após consulta/exame</li>
+<li><strong>Sistema de Triagem:</strong> Use para priorizar pacientes de alto risco</li>
+<li><strong>Dashboard de Acompanhamento:</strong> Monitore tendências de risco em populações</li>
+</ol>
+<p><strong>⚠️ IMPORTANTE - USO CLÍNICO:</strong></p>
+<ul>
+<li>Esta API é uma <strong>ferramenta de apoio à decisão</strong>, NÃO um substituto do julgamento médico</li>
+<li>Sempre confirme casos de alto risco com avaliação clínica especializada e exames de imagem (CT/MRI)</li>
+<li>Considere falsos positivos/negativos nas decisões clínicas</li>
+</ul>
+<h3 id="estrutura-de-arquivos">Estrutura de Arquivos</h3>
+<pre class="hljs"><code><div>tech-challenge-fase-1/
+├── tech-challenge-fase-1.ipynb    # Notebook principal com EDA, modelagem e avaliação
+├── main.py                         # API FastAPI para predições em tempo real
+├── pipe_lr_model.pkl              # Modelo Logistic Regression treinado (serializado)
+├── requirements.txt                # Dependências do projeto
+└── README.md                       # Este arquivo
+</div></code></pre>
+<hr>
+<h2 id="resultados-obtidos">Resultados Obtidos</h2>
+<h3 id="tech-challenge-2">Tech Challenge 2</h3>
+<h4 id="bibliotecas-utilizadas-algoritmo-gen%C3%A9tico">Bibliotecas Utilizadas (Algoritmo Genético)</h4>
+<table>
+<thead>
+<tr>
+<th>Biblioteca</th>
+<th>Versão</th>
+<th>Função</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sklearn-genetic-opt</code></td>
+<td>0.12.0</td>
+<td>Otimização de hiperparâmetros via Algoritmo Genético (<code>GASearchCV</code>)</td>
+</tr>
+<tr>
+<td><code>scikit-learn</code></td>
+<td>1.7.2</td>
+<td>Pipelines, modelos (LR, RF), métricas, pré-processamento e validação cruzada</td>
+</tr>
+<tr>
+<td><code>pandas</code></td>
+<td>2.3.3</td>
+<td>Manipulação e análise de dados tabulares</td>
+</tr>
+<tr>
+<td><code>numpy</code></td>
+<td>2.3.5</td>
+<td>Operações numéricas e vetorizadas</td>
+</tr>
+<tr>
+<td><code>matplotlib</code></td>
+<td>3.10.7</td>
+<td>Visualização de gráficos (barras, evolução de fitness, permutação)</td>
+</tr>
+<tr>
+<td><code>seaborn</code></td>
+<td>0.13.2</td>
+<td>Visualizações estatísticas complementares</td>
+</tr>
+<tr>
+<td><code>missingno</code></td>
+<td>0.5.2</td>
+<td>Diagnóstico visual de dados ausentes</td>
+</tr>
+<tr>
+<td><code>fastapi</code></td>
+<td>0.128.0</td>
+<td>API REST para predições em tempo real (produtização)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="otimiza%C3%A7%C3%A3o-de-hiperpar%C3%A2metros-com-algoritmo-gen%C3%A9tico">Otimização de Hiperparâmetros com Algoritmo Genético</h4>
+<p>Na segunda fase, foram implementados <strong>3 experimentos de otimização de hiperparâmetros por Algoritmo Genético (GA)</strong>, combinando abordagens com biblioteca (<code>sklearn-genetic-opt</code>) e implementações manuais (<em>from scratch</em>), aplicados a dois modelos de classificação: <strong>Logistic Regression</strong> e <strong>Random Forest</strong>.</p>
+<p>O GA evolui populações de configurações de hiperparâmetros ao longo de gerações, aplicando seleção por torneio, crossover uniforme, mutação e elitismo para encontrar combinações que maximizem o desempenho do modelo.</p>
+<h5 id="scorer-customizado">Scorer Customizado</h5>
+<p><strong>F-beta (β=1.5)</strong> com penalidade para modelos degenerados:</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">custom_scorer</span><span class="hljs-params">(y_true, y_pred)</span>:</span>
+    prec = precision_score(y_true, y_pred, zero_division=<span class="hljs-number">0</span>)
+    <span class="hljs-keyword">if</span> prec &lt; <span class="hljs-number">0.3</span>:
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0.0</span>  <span class="hljs-comment"># penaliza soluções triviais</span>
+    <span class="hljs-keyword">return</span> fbeta_score(y_true, y_pred, beta=<span class="hljs-number">1.5</span>, zero_division=<span class="hljs-number">0</span>)
+</div></code></pre>
+<ul>
+<li><strong>β=1.5</strong> privilegia Recall (detectar casos de AVC) sobre Precision, sem ignorar falsos positivos</li>
+<li><strong>Penalidade (prec &lt; 0.3):</strong> impede soluções degeneradas que classificam tudo como positivo (recall=1.0, precision~0.5, F1~0.66)</li>
+</ul>
+<h5 id="espa%C3%A7o-de-busca-dos-hiperpar%C3%A2metros">Espaço de Busca dos Hiperparâmetros</h5>
+<p><strong>Logistic Regression:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Hiperparâmetro</th>
+<th>Tipo</th>
+<th>Intervalo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>C</code></td>
+<td>Contínuo (log-uniform)</td>
+<td>0.001 – 100</td>
+</tr>
+<tr>
+<td><code>penalty</code></td>
+<td>Categórico</td>
+<td>l1, l2</td>
+</tr>
+<tr>
+<td><code>solver</code></td>
+<td>Categórico</td>
+<td>liblinear, saga</td>
+</tr>
+<tr>
+<td><code>max_iter</code></td>
+<td>Inteiro</td>
+<td>100 – 2000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Random Forest:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Hiperparâmetro</th>
+<th>Tipo</th>
+<th>Intervalo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_estimators</code></td>
+<td>Inteiro</td>
+<td>50 – 300</td>
+</tr>
+<tr>
+<td><code>max_depth</code></td>
+<td>Inteiro</td>
+<td>3 – 20</td>
+</tr>
+<tr>
+<td><code>min_samples_split</code></td>
+<td>Inteiro</td>
+<td>2 – 15</td>
+</tr>
+<tr>
+<td><code>min_samples_leaf</code></td>
+<td>Inteiro</td>
+<td>1 – 8</td>
+</tr>
+<tr>
+<td><code>max_features</code></td>
+<td>Categórico</td>
+<td>sqrt, log2, None</td>
+</tr>
+</tbody>
+</table>
+<h5 id="configura%C3%A7%C3%A3o-dos-3-experimentos-ga">Configuração dos 3 Experimentos GA</h5>
+<table>
+<thead>
+<tr>
+<th>Parâmetro</th>
+<th>Exp 1 (<code>sklearn-genetic-opt</code>)</th>
+<th>Exp 2 (GA Manual)</th>
+<th>Exp 3 (GA Manual)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Implementação</td>
+<td>Biblioteca <code>GASearchCV</code></td>
+<td>From scratch</td>
+<td>From scratch</td>
+</tr>
+<tr>
+<td>População</td>
+<td>15</td>
+<td>30</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Gerações</td>
+<td>10</td>
+<td>15</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Taxa de crossover</td>
+<td>0.8</td>
+<td>0.9</td>
+<td>0.7</td>
+</tr>
+<tr>
+<td>Taxa de mutação</td>
+<td>0.1</td>
+<td>0.05</td>
+<td>0.25</td>
+</tr>
+<tr>
+<td>Seleção</td>
+<td>Torneio (k=3)</td>
+<td>Torneio (k=5)</td>
+<td>Torneio (k=3)</td>
+</tr>
+<tr>
+<td>Elitismo</td>
+<td>Sim</td>
+<td>Top 2</td>
+<td>Top 1</td>
+</tr>
+<tr>
+<td>Estratégia</td>
+<td>Balanceado</td>
+<td>Exploração conservadora</td>
+<td>Exploração agressiva</td>
+</tr>
+</tbody>
+</table>
+<h5 id="melhores-hiperpar%C3%A2metros-encontrados">Melhores Hiperparâmetros Encontrados</h5>
+<p><strong>Logistic Regression (Exp 1 — vencedor):</strong></p>
+<ul>
+<li><code>C</code> = 0.00198, <code>penalty</code> = l2, <code>solver</code> = liblinear, <code>max_iter</code> = 613</li>
+<li>Melhor fitness (treino CV): <strong>0.8045</strong></li>
+</ul>
+<p><strong>Random Forest (Exp 3 — vencedor):</strong></p>
+<ul>
+<li><code>n_estimators</code> = variável, <code>max_depth</code> = 10, <code>min_samples_split</code> = 9, <code>min_samples_leaf</code> = 7, <code>max_features</code> = log2</li>
+<li>Melhor fitness (treino CV): <strong>0.7906</strong></li>
+</ul>
+<h5 id="converg%C3%AAncia-dos-algoritmos-gen%C3%A9ticos">Convergência dos Algoritmos Genéticos</h5>
+<ul>
+<li><strong>LR Exp 1:</strong> convergiu na geração 9/10 (fitness estabilizou em 0.8045)</li>
+<li><strong>RF Exp 1:</strong> convergiu na geração 9/10 (fitness estabilizou em 0.7900)</li>
+<li><strong>LR Exp 2 (pop=30):</strong> atingiu 0.8045 na geração 12/15 — convergência mais lenta pela população maior</li>
+<li><strong>LR Exp 3 (pop=10, mut=0.25):</strong> atingiu 0.8045 na geração 11/20, com maior instabilidade (média caiu a 0.56 na geração 8 por mutação alta)</li>
+<li><strong>RF Exp 3 (pop=10, mut=0.25):</strong> atingiu 0.7906 na geração 12/20 — exploração agressiva superou o Exp 1</li>
+</ul>
+<h5 id="resultados--comparativo-de-m%C3%A9tricas-teste">Resultados — Comparativo de Métricas (Teste)</h5>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Precision</th>
+<th>Recall</th>
+<th>F1-Score</th>
+<th>ROC-AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logistic Regression (GA)</td>
+<td>0.6989</td>
+<td><strong>0.8125</strong></td>
+<td><strong>0.7514</strong></td>
+<td>0.8030</td>
+</tr>
+<tr>
+<td>Random Forest (GA)</td>
+<td><strong>0.7255</strong></td>
+<td>0.7708</td>
+<td>0.7475</td>
+<td><strong>0.8136</strong></td>
+</tr>
+<tr>
+<td>Logistic Regression (Original)</td>
+<td>0.7397</td>
+<td>0.7458</td>
+<td>0.7427</td>
+<td>0.8132</td>
+</tr>
+<tr>
+<td>Random Forest (Original)</td>
+<td>0.7114</td>
+<td>0.7292</td>
+<td>0.7202</td>
+<td>0.7997</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Análise de Melhorias (GA vs Original):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>LR: Original → GA</th>
+<th>RF: Original → GA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Precision</td>
+<td>0.7397 → 0.6989 (<strong>-5.51%</strong>)</td>
+<td>0.7114 → 0.7255 (<strong>+1.98%</strong>)</td>
+</tr>
+<tr>
+<td>Recall</td>
+<td>0.7458 → 0.8125 (<strong>+8.94%</strong>)</td>
+<td>0.7292 → 0.7708 (<strong>+5.71%</strong>)</td>
+</tr>
+<tr>
+<td>F1-Score</td>
+<td>0.7427 → 0.7514 (<strong>+1.17%</strong>)</td>
+<td>0.7202 → 0.7475 (<strong>+3.79%</strong>)</td>
+</tr>
+<tr>
+<td>ROC-AUC</td>
+<td>0.8132 → 0.8030 (-1.26%)</td>
+<td>0.7997 → 0.8136 (<strong>+1.73%</strong>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Observações clínicas:</strong></p>
+<ul>
+<li>O GA na <strong>Logistic Regression</strong> aumentou o Recall em <strong>+8.94%</strong> (de 0.7458 para 0.8125), detectando mais pacientes com AVC, ao custo de uma queda de -5.51% na Precision — trade-off aceitável no contexto clínico, onde falsos negativos são mais perigosos que falsos positivos</li>
+<li>O GA no <strong>Random Forest</strong> melhorou <strong>todas as métricas</strong> simultaneamente, com destaque para Recall +5.71% e F1 +3.79%</li>
+<li>A matriz de confusão do melhor modelo (LR GA) mostra 195 verdadeiros positivos e 45 falsos negativos em 240 casos de AVC</li>
+</ul>
+<h5 id="ranking-completo--todos-os-modelos-por-m%C3%A9dia-de-recall--f1">Ranking Completo — Todos os Modelos (por média de Recall + F1)</h5>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Modelo</th>
+<th>Recall</th>
+<th>F1-Score</th>
+<th>Média</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1º</td>
+<td>LR — Exp1 (sklearn-genetic-opt)</td>
+<td>0.8125</td>
+<td>0.7514</td>
+<td>0.7820</td>
+</tr>
+<tr>
+<td>2º</td>
+<td>LR — Exp2 (GA Manual, pop=30, mut=0.05)</td>
+<td>0.8000</td>
+<td>0.7456</td>
+<td>0.7728</td>
+</tr>
+<tr>
+<td>3º</td>
+<td>LR — Exp3 (GA Manual, pop=10, mut=0.25)</td>
+<td>0.8000</td>
+<td>0.7456</td>
+<td>0.7728</td>
+</tr>
+<tr>
+<td>4º</td>
+<td>RF — Exp3 (GA Manual, pop=10, mut=0.25)</td>
+<td>0.7708</td>
+<td>0.7475</td>
+<td>0.7592</td>
+</tr>
+<tr>
+<td>5º</td>
+<td>RF — Exp1 (sklearn-genetic-opt)</td>
+<td>0.7542</td>
+<td>0.7418</td>
+<td>0.7480</td>
+</tr>
+<tr>
+<td>6º</td>
+<td>RF — Exp2 (GA Manual, pop=30, mut=0.05)</td>
+<td>0.7583</td>
+<td>0.7368</td>
+<td>0.7476</td>
+</tr>
+<tr>
+<td>7º</td>
+<td>LR — Original (sem GA)</td>
+<td>0.7458</td>
+<td>0.7427</td>
+<td>0.7443</td>
+</tr>
+<tr>
+<td>8º</td>
+<td>RF — Original (sem GA)</td>
+<td>0.7292</td>
+<td>0.7202</td>
+<td>0.7247</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Destaques do ranking:</strong></p>
+<ul>
+<li>Todos os 6 modelos otimizados por GA superaram os 2 modelos originais</li>
+<li>O melhor modelo (LR Exp1, <code>sklearn-genetic-opt</code>) teve Recall 8.94% superior ao LR Original</li>
+<li>As implementações manuais (Exp 2 e Exp 3) convergiram para resultados muito próximos da biblioteca, validando a implementação <em>from scratch</em></li>
+</ul>
+<h5 id="import%C3%A2ncia-das-features-permuta%C3%A7%C3%A3o--melhor-modelo-ga">Importância das Features (Permutação — Melhor Modelo GA)</h5>
+<p>As 5 features mais relevantes para o modelo de Logistic Regression (GA):</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Importância</th>
+<th>Desvio Padrão</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RIDAGEYR_age</code> (Idade)</td>
+<td>0.0727</td>
+<td>0.0131</td>
+</tr>
+<tr>
+<td><code>BPQ020_high_bp_bin</code> (Hipertensão)</td>
+<td>0.0122</td>
+<td>0.0049</td>
+</tr>
+<tr>
+<td><code>OCQ260_occupation</code> (Situação profissional)</td>
+<td>0.0095</td>
+<td>0.0038</td>
+</tr>
+<tr>
+<td><code>LBXGH_hba1c</code> (Hemoglobina glicada)</td>
+<td>0.0053</td>
+<td>0.0029</td>
+</tr>
+<tr>
+<td><code>BPXSY1_sbp</code> (Pressão sistólica)</td>
+<td>0.0028</td>
+<td>0.0040</td>
+</tr>
+</tbody>
+</table>
+<p>A <strong>idade</strong> é a feature dominante, com importância ~6× superior às demais, consistente com a literatura médica sobre fatores de risco de AVC.</p>
+<h4 id="integra%C3%A7%C3%A3o-com-llms-para-interpreta%C3%A7%C3%A3o-de-resultados">Integração com LLMs para Interpretação de Resultados</h4>
+<ul>
+<li>Integrar uma LLM pré-treinada (GPT, Falcon, LLaMA, etc.) para:
+<ul>
+<li>Gerar explicações em linguagem natural dos diagnósticos produzidos pelos modelos;</li>
+<li>Transformar dados numéricos e estatísticos em insights acionáveis para médicos;</li>
+<li>Preparar a base para a futura integração com dados textuais no Módulo 3.</li>
+</ul>
+</li>
+<li>Implementar técnicas de prompt engineering para obter respostas relevantes e adequadas ao contexto médico;</li>
+<li>Avaliar a qualidade das interpretações geradas.</li>
+</ul>
+<hr>
+<h2 id="refer%C3%AAncias">Referências</h2>
+<ol>
+<li>CDC NHANES — https://www.cdc.gov/nchs/nhanes</li>
+<li>Documentação scikit-learn — https://scikit-learn.org</li>
+<li>Pandascouple. Projeto ML Previsão de AVC — https://pandascouple.medium.com/projeto-machine-learning-previs%C3%A3o-de-avc-f4b7dce11929</li>
+<li>USP Rádio. Uso de IA e análise de dados na prevenção de AVC — https://jornal.usp.br/radio-usp/uso-de-ia-e-analise-de-dados-na-prevencao-de-avc-e-ataque-isquemico-transitorio/</li>
+<li>Nature Research. Machine learning para risco cardiovascular — https://www.nature.com/articles/s41598-024-61665-4</li>
+<li>Journal of Health Informatics. AVC diagnosis — https://jhi.sbis.org.br/index.php/jhi-sbis/article/view/980</li>
+<li>Nature Research 2025. AVC modeling — https://www.nature.com/articles/s41598-025-01855-w</li>
+<li>Atlas Grand Challenge - https://atlas.grand-challenge.org/</li>
+<li>Notebook Atlas Grand Challenge - https://github.com/npnl/isles_2022/blob/main/ISLES_Example.ipynb</li>
+<li>EfficientNetB0-Stroke Prediction-98.72 https://www.kaggle.com/code/abdallahwagih/efficientnetb0-stroke-prediction-98-72</li>
+</ol>
+<hr>
+
+</body>
+</html>

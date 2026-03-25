@@ -32,7 +32,7 @@ Construir uma solução com foco em IA para processamento de dados médicos, apl
 
 #### Fase 2
 
-* [Fase 2 — Vídeo de apresentação do projeto](#) <!-- TODO: adicionar link do vídeo da Fase 2 -->
+* [Fase 2 — Vídeo de apresentação do projeto](https://youtu.be/gmO5QkQ1pzQ)
 
 * [Fase 2 — Notebook Tech Challenge](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/rm369853-tech-challenge-fase-2.ipynb "Notebook Tech Challenge Fase 2");
 
