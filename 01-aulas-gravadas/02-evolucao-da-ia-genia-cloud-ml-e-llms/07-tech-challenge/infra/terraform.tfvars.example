@@ -1,0 +1,8 @@
+aws_region              = "us-east-1"
+project_name            = "avc-stroke-prediction"
+environment             = "dev"
+notebook_instance_type  = "ml.t3.medium"
+notebook_volume_size    = 20
+training_instance_type  = "ml.m5.large"
+endpoint_instance_type  = "ml.t2.medium"
+s3_force_destroy        = true
