@@ -120,7 +120,7 @@ def train_baseline_models(X_train, X_test, y_train, y_test, run=None):
                 (
                     "clf",
                     RandomForestClassifier(
-                        class_weight="balanced", n_estimators=100, random_state=42
+                        class_weight="balanced", n_estimators=100, random_state=42, n_jobs=-1
                     ),
                 ),
             ]
@@ -195,13 +195,14 @@ def genetic_algorithm_optimization(X_train, y_train, n_pop=20, n_gen=10, warm_st
                     RandomForestClassifier(
                         class_weight="balanced",
                         random_state=42,
+                        n_jobs=-1,
                         **individual,
                     ),
                 ),
             ]
         )
         scorer = make_scorer(fbeta_score, beta=1.5)
-        scores = cross_val_score(pipe, X_train, y_train, cv=3, scoring=scorer)
+        scores = cross_val_score(pipe, X_train, y_train, cv=3, scoring=scorer, n_jobs=-1)
         return scores.mean()
 
     def tournament_selection(population, fitnesses, k=5):
@@ -277,6 +278,7 @@ def genetic_algorithm_optimization(X_train, y_train, n_pop=20, n_gen=10, warm_st
                 RandomForestClassifier(
                     class_weight="balanced",
                     random_state=42,
+                    n_jobs=-1,
                     **best_overall,
                 ),
             ),
@@ -366,7 +368,7 @@ if __name__ == "__main__":
         pipe = Pipeline([
             ("pre", preproc),
             ("clf", RandomForestClassifier(
-                class_weight="balanced", random_state=42, **rf_params
+                class_weight="balanced", random_state=42, n_jobs=-1, **rf_params
             )),
         ])
         pipe.fit(X_train, y_train)

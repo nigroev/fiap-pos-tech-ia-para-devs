@@ -27,7 +27,7 @@ variable "environment" {
 variable "notebook_instance_type" {
   description = "Tipo de instância EC2 para o SageMaker Notebook"
   type        = string
-  default     = "ml.t3.medium"
+  default     = "ml.t3.xlarge"
 }
 
 variable "notebook_volume_size" {
@@ -57,7 +57,7 @@ variable "training_max_spot_wait_seconds" {
 variable "endpoint_instance_type" {
   description = "Tipo de instância EC2 para o endpoint de inferência"
   type        = string
-  default     = "ml.t2.medium"
+  default     = "ml.t3.medium"
 }
 
 variable "endpoint_initial_instance_count" {
