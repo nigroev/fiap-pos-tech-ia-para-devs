@@ -27,7 +27,7 @@ variable "environment" {
 variable "notebook_instance_type" {
   description = "Tipo de instância EC2 para o SageMaker Notebook"
   type        = string
-  default     = "ml.t3.xlarge"
+  default     = "ml.m5.xlarge"
 }
 
 variable "notebook_volume_size" {
@@ -39,7 +39,7 @@ variable "notebook_volume_size" {
 variable "training_instance_type" {
   description = "Tipo de instância EC2 para o treinamento no SageMaker"
   type        = string
-  default     = "ml.m5.large"
+  default     = "ml.m5.xlarge"
 }
 
 variable "training_max_run_seconds" {
@@ -100,4 +100,20 @@ variable "s3_force_destroy" {
   description = "Permitir destruir o bucket S3 mesmo com objetos dentro"
   type        = bool
   default     = true
+}
+
+# ==============================================================================
+# Modo desenvolvimento
+# ==============================================================================
+
+variable "dev_mode" {
+  description = "Ativa modo desenvolvimento: reduz HPO jobs, GA pop/gen e desativa Autopilot para execução rápida"
+  type        = bool
+  default     = true
+}
+
+variable "skip_deploy" {
+  description = "Pular deploy dos endpoints após o treinamento"
+  type        = bool
+  default     = false
 }

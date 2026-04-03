@@ -36,8 +36,3 @@ output "models_s3_uri" {
   description = "URI S3 para o diretório de modelos"
   value       = "s3://${aws_s3_bucket.data_bucket.id}/models/"
 }
-
-output "terraform_state_bucket_name" {
-  description = "Nome do bucket S3 para o Terraform remote state"
-  value       = aws_s3_bucket.terraform_state.id
-}

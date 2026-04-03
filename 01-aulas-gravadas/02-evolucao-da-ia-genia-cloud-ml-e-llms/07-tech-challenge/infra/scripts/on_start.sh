@@ -9,6 +9,8 @@ set -e
 BUCKET_NAME="${bucket_name}"
 REGION="${region}"
 PROJECT="${project}"
+DEV_MODE="${dev_mode}"     # "true" para modo desenvolvimento rápido
+SKIP_DEPLOY="${skip_deploy}" # "true" para pular deploy dos endpoints
 
 echo "=============================="
 echo " on_start: Iniciando pipeline"
@@ -25,10 +27,17 @@ aws s3 cp "s3://$${BUCKET_NAME}/scripts/requirements.txt" "$${WORK_DIR}/requirem
 nohup bash -c "
   source /home/ec2-user/anaconda3/bin/activate python3
   cd $${WORK_DIR}
+  DEV_FLAG=\"\"
+  if [ \"$${DEV_MODE}\" = \"true\" ]; then DEV_FLAG=\"--dev\"; fi
+  SKIP_DEPLOY_FLAG=""
+  if [ "$${SKIP_DEPLOY}" = "true" ]; then SKIP_DEPLOY_FLAG="--skip-deploy"; fi
   python train_and_deploy.py \
     --bucket $${BUCKET_NAME} \
     --region $${REGION} \
     --project $${PROJECT} \
+    --use-pipeline \
+    $${DEV_FLAG} \
+    $${SKIP_DEPLOY_FLAG} \
     > /home/ec2-user/SageMaker/train_and_deploy.log 2>&1
   source /home/ec2-user/anaconda3/bin/deactivate
 " &

@@ -21,6 +21,7 @@ Integrações SageMaker:
 import argparse
 import json
 import logging
+import math
 import os
 import shutil
 import sys
@@ -44,6 +45,7 @@ from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.tuner import HyperparameterTuner, IntegerParameter
 from sagemaker.workflow.parameters import ParameterInteger, ParameterString
 from sagemaker.workflow.pipeline import Pipeline
+from sagemaker.workflow.pipeline_context import PipelineSession
 from sagemaker.workflow.steps import TrainingStep, TuningStep
 
 logging.basicConfig(
@@ -421,13 +423,34 @@ def run_autopilot_job(data_s3_uri, bucket, region, project, role_arn, session,
     )
 
     # Lançar de forma assíncrona (wait=False) para rodar em paralelo com HPO+GA
-    auto_ml.fit(
-        inputs=data_s3_uri,
-        job_name=job_name,
-        wait=False,
-    )
+    sm_client = session.sagemaker_client
+    try:
+        auto_ml.fit(
+            inputs=data_s3_uri,
+            job_name=job_name,
+            wait=False,
+        )
+        logger.info(f"Autopilot job lançado: {job_name} (max_candidates={max_candidates})")
+    except sm_client.exceptions.ResourceLimitExceeded:
+        logger.warning(
+            "ResourceLimitExceeded: limite de AutoML jobs concorrentes atingido. "
+            "Procurando job em andamento para reutilizar..."
+        )
+        # Find the most recent InProgress AutoML job to reuse
+        paginator = sm_client.get_paginator("list_auto_ml_jobs")
+        running_job = None
+        for page in paginator.paginate(StatusEquals="InProgress", SortBy="CreationTime", SortOrder="Descending"):
+            jobs = page.get("AutoMLJobSummaries", [])
+            if jobs:
+                running_job = jobs[0]["AutoMLJobName"]
+                break
+        if running_job:
+            job_name = running_job
+            logger.info(f"Reutilizando Autopilot job em andamento: {job_name}")
+        else:
+            logger.error("Nenhum AutoML job em andamento encontrado. Pulando Autopilot.")
+            return None, None
 
-    logger.info(f"Autopilot job lançado: {job_name} (max_candidates={max_candidates})")
     return auto_ml, job_name
 
 
@@ -643,16 +666,13 @@ def deploy_sagemaker_endpoint(estimator, project, endpoint_instance_type):
     try:
         sm_client.describe_endpoint(EndpointName=endpoint_name)
         logger.info(f"Endpoint '{endpoint_name}' já existe. Atualizando...")
-        update_endpoint = True
     except sm_client.exceptions.ClientError:
         logger.info(f"Criando novo endpoint '{endpoint_name}'...")
-        update_endpoint = False
 
     predictor = estimator.deploy(
         initial_instance_count=1,
         instance_type=endpoint_instance_type,
         endpoint_name=endpoint_name,
-        update_endpoint=update_endpoint,
         entry_point="inference.py",
         source_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "inference_src"),
     )
@@ -824,6 +844,29 @@ def create_sagemaker_pipeline(
 # MAIN — Orquestra o pipeline completo
 # ==============================================================================
 
+_TOTAL_PHASES = 8
+_phase_start_time: dict = {}
+
+
+def _phase(n: int, label: str, end: bool = False) -> None:
+    """Loga um banner de início ou fim de fase com timestamp e contador."""
+    bar = "─" * 56
+    ts = datetime.now().strftime("%H:%M:%S")
+    if end:
+        elapsed = ""
+        if n in _phase_start_time:
+            secs = time.time() - _phase_start_time[n]
+            elapsed = f"  ({math.floor(secs // 60)}m{int(secs % 60)}s)"
+        logger.info(f"╰{bar}╯")
+        logger.info(f"  ✓ FASE {n}/{_TOTAL_PHASES} concluída{elapsed}  [{ts}]")
+        logger.info("")
+    else:
+        _phase_start_time[n] = time.time()
+        logger.info("")
+        logger.info(f"╭{bar}╮")
+        logger.info(f"  ▶ FASE {n}/{_TOTAL_PHASES}: {label}  [{ts}]")
+        logger.info(f"╰{bar}╯")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -835,7 +878,12 @@ def main():
     parser.add_argument("--skip-deploy", action="store_true", help="Pular deploy dos endpoints")
     parser.add_argument("--skip-autopilot", action="store_true", help="Pular Autopilot AutoML")
     parser.add_argument("--skip-feature-store", action="store_true", help="Pular Feature Store")
-    parser.add_argument("--use-pipeline", action="store_true", help="Usar SageMaker Pipelines")
+    parser.add_argument(
+        "--use-pipeline",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Usar SageMaker Pipelines (padrão: ativado). Use --no-use-pipeline para modo manual.",
+    )
     parser.add_argument("--ga-pop", type=int, default=20, help="Tamanho da população do GA")
     parser.add_argument("--ga-gen", type=int, default=10, help="Número de gerações do GA")
     parser.add_argument(
@@ -866,35 +914,78 @@ def main():
         "--autopilot-max-candidates", type=int, default=20,
         help="Número máximo de modelos candidatos do Autopilot"
     )
+    parser.add_argument(
+        "--dev",
+        action="store_true",
+        help=(
+            "Modo desenvolvimento: reduz drasticamente HPO jobs, GA pop/gen e "
+            "candidatos Autopilot para validação rápida. "
+            "Equivale a: --hpo-max-jobs 3 --hpo-max-parallel-jobs 2 "
+            "--ga-pop 4 --ga-gen 3 --autopilot-max-candidates 3 "
+            "--skip-autopilot --max-run 600 --max-spot-wait 900"
+        ),
+    )
     args = parser.parse_args()
 
-    logger.info("=" * 60)
-    logger.info("  Orquestrador — AVC Stroke Prediction (SageMaker)")
-    logger.info("  Experiments + Feature Store + Pipelines + Autopilot + HPO + GA")
-    logger.info("=" * 60)
+    # Aplicar overrides do modo --dev antes de qualquer uso dos args
+    if args.dev:
+        args.hpo_max_jobs = 1          # 1 job HPO — mínimo para validar o fluxo
+        args.hpo_max_parallel_jobs = 1
+        args.ga_pop = 2               # GA só precisa rodar, não convergir
+        args.ga_gen = 2
+        args.autopilot_max_candidates = 3
+        args.skip_autopilot = True    # Autopilot demora >30min só no bootstrap
+        args.max_run = 300            # 5 min por job
+        args.max_spot_wait = 600      # 10 min de espera spot
+
+    bar = "═" * 58
+    logger.info(f"╔{bar}╗")
+    logger.info("║  Orquestrador — AVC Stroke Prediction (SageMaker)       ║")
+    logger.info("║  Experiments · Feature Store · Pipelines                ║")
+    logger.info("║  Autopilot · HPO · GA                                   ║")
+    if args.dev:
+        logger.info("║  *** MODO DEV — parâmetros reduzidos para validação ***  ║")
+    logger.info(f"╚{bar}╝")
+    logger.info(f"  Início: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"  Bucket: {args.bucket} | Região: {args.region} | Projeto: {args.project}")
+    logger.info(f"  Modo: {'Pipeline' if args.use_pipeline else 'Manual'} | "
+                f"Autopilot: {'sim' if not args.skip_autopilot else 'não'} | "
+                f"FeatureStore: {'sim' if not args.skip_feature_store else 'não'}"
+                + (" | [DEV]" if args.dev else ""))
+    if args.dev:
+        logger.info(
+            f"  [DEV] HPO jobs={args.hpo_max_jobs} parallel={args.hpo_max_parallel_jobs} | "
+            f"GA pop={args.ga_pop} gen={args.ga_gen} | "
+            f"max-run={args.max_run}s"
+        )
 
     # ================================================================
     # 1. Setup — Role, Session, Experiment
     # ================================================================
+    _phase(1, "Setup — Role, Session, SageMaker Experiment")
     iam = boto3.client("iam", region_name=args.region)
     role_name = f"{args.project}-dev-sagemaker-role"
     role_arn = iam.get_role(RoleName=role_name)["Role"]["Arn"]
     logger.info(f"Usando role: {role_arn}")
 
     session = sagemaker.Session(boto_session=boto3.Session(region_name=args.region))
+    pipeline_session = PipelineSession(boto_session=boto3.Session(region_name=args.region))
 
     # Criar Experiment para rastrear todos os jobs
     experiment_name = create_experiment(session, args.project)
+    _phase(1, "", end=True)
 
     # ================================================================
     # 2. Carregar e pré-processar dados
     # ================================================================
+    _phase(2, "Ingestão e pré-processamento de dados (NHANES)")
     df_raw = load_nhanes_data(bucket=args.bucket, region=args.region)
     df = preprocess_data(df_raw)
 
     # ================================================================
     # 3. Feature Store — persistir features pré-processadas
     # ================================================================
+    _phase(3, "Feature Store — ingestão de features pré-processadas")
     if not args.skip_feature_store:
         fg, fg_name = create_or_get_feature_group(
             session=session,
@@ -906,11 +997,13 @@ def main():
         logger.info(f"Features ingeridas no Feature Store: {fg_name}")
     else:
         logger.info("Feature Store ignorado (--skip-feature-store).")
+    _phase(3, "", end=True)
 
     # Upload CSV para S3 (usado como canal de treinamento)
     data_s3_uri = upload_dataset_to_s3(df, args.bucket, args.region)
 
     # Log de dados no Experiment
+    _phase(2, "", end=True)
     with Run(
         experiment_name=experiment_name,
         run_name=f"data-prep-{datetime.now().strftime('%Y%m%d%H%M%S')}",
@@ -924,10 +1017,11 @@ def main():
     # ================================================================
     # 4. Lançar Autopilot AutoML (assíncrono — roda em paralelo)
     # ================================================================
+    _phase(4, "Autopilot AutoML — lançamento assíncrono")
     auto_ml = None
     autopilot_job = None
     if not args.skip_autopilot:
-        auto_ml, autopilot_job = run_autopilot_job(
+        result = run_autopilot_job(
             data_s3_uri=data_s3_uri,
             bucket=args.bucket,
             region=args.region,
@@ -936,12 +1030,18 @@ def main():
             session=session,
             max_candidates=args.autopilot_max_candidates,
         )
+        if result is not None and result != (None, None):
+            auto_ml, autopilot_job = result
+        else:
+            logger.warning("Autopilot não pôde ser lançado; continuando sem ele.")
     else:
         logger.info("Autopilot ignorado (--skip-autopilot).")
+    _phase(4, "", end=True)
 
     # ================================================================
     # 5. Execução — Pipeline ou manual
     # ================================================================
+    _phase(5, f"Treinamento — {'SageMaker Pipelines (HPO + GA)' if args.use_pipeline else 'Modo manual (HPO + GA)'}")
     if args.use_pipeline:
         # ----- Modo Pipeline -----
         logger.info("Executando via SageMaker Pipelines...")
@@ -951,7 +1051,7 @@ def main():
             region=args.region,
             project=args.project,
             role_arn=role_arn,
-            session=session,
+            session=pipeline_session,
             training_instance_type=args.training_instance_type,
             endpoint_instance_type=args.endpoint_instance_type,
             ga_pop=args.ga_pop,
@@ -968,17 +1068,121 @@ def main():
         pipeline.upsert(role_arn=role_arn)
         execution = pipeline.start(
             execution_display_name=f"exec-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            # Passando parâmetros explicitamente garante que dev mode seja respeitado
+            # independente da definição em cache no SageMaker
+            parameters={
+                "TrainingInstanceType": args.training_instance_type,
+                "GAPop": args.ga_pop,
+                "GAGen": args.ga_gen,
+                "HPOMaxJobs": args.hpo_max_jobs,
+                "HPOMaxParallelJobs": args.hpo_max_parallel_jobs,
+            },
         )
         logger.info(f"Pipeline execution ARN: {execution.arn}")
+        logger.info(
+            f"Parâmetros: HPO max_jobs={args.hpo_max_jobs} parallel={args.hpo_max_parallel_jobs} | "
+            f"GA pop={args.ga_pop} gen={args.ga_gen} | "
+            f"instance={args.training_instance_type}"
+        )
+        logger.info("Acompanhando execução do Pipeline... (poll a cada 60s)")
 
-        # Aguardar conclusão
-        execution.wait()
-        logger.info(f"Pipeline status: {execution.describe()['PipelineExecutionStatus']}")
+        sm_client = session.sagemaker_client
+        poll_interval = 60
+        last_step_statuses = {}
 
-        # Para deploy, precisamos do estimator com model_data do último training job
+        while True:
+            exec_desc = execution.describe()
+            exec_status = exec_desc["PipelineExecutionStatus"]
+
+            # Listar steps e logar mudanças de status
+            steps = execution.list_steps()
+            total_steps = len(steps)
+            done_steps = sum(1 for s in steps if s["StepStatus"] in ("Succeeded", "Failed", "Stopped"))
+
+            _STEP_DESC = {
+                "TuningStep": "HPO Bayesian (otimização de hiperparâmetros)",
+                "TrainingStep": "GA Training (treinamento com warm start)",
+            }
+
+            for idx, step in enumerate(steps, 1):
+                step_name = step["StepName"]
+                step_status = step["StepStatus"]
+                step_type = step.get("StepType", "")
+                desc = _STEP_DESC.get(step_type, step_type)
+                prev = last_step_statuses.get(step_name)
+                if step_status != prev:
+                    logger.info(
+                        f"  [Step {idx}/{total_steps}] {step_name} ({desc}): "
+                        f"{prev or 'Pendente'} → {step_status}"
+                    )
+                    last_step_statuses[step_name] = step_status
+
+                # Detalhar progresso do HPO Tuning
+                if step_status == "Executing" and step.get("Metadata", {}).get("TuningJob"):
+                    tuning_job_name = step["Metadata"]["TuningJob"]["Arn"].split("/")[-1]
+                    try:
+                        tj = sm_client.describe_hyper_parameter_tuning_job(
+                            HyperParameterTuningJobName=tuning_job_name
+                        )
+                        counts = tj.get("TrainingJobStatusCounters", {})
+                        best = tj.get("BestTrainingJob", {})
+                        best_metric = best.get("FinalHyperParameterTuningJobObjectiveMetric", {})
+                        logger.info(
+                            f"    HPO '{tuning_job_name}': "
+                            f"Completed={counts.get('Completed', 0)}, "
+                            f"InProgress={counts.get('InProgress', 0)}, "
+                            f"Failed={counts.get('Failed', 0)} | "
+                            f"BestMetric={best_metric.get('MetricName', '-')}="
+                            f"{best_metric.get('Value', '-')}"
+                        )
+                    except Exception:
+                        pass
+
+                # Detalhar progresso do Training Job
+                if step_status == "Executing" and step.get("Metadata", {}).get("TrainingJob"):
+                    training_job_arn = step["Metadata"]["TrainingJob"]["Arn"]
+                    training_job_name = training_job_arn.split("/")[-1]
+                    try:
+                        tj = sm_client.describe_training_job(TrainingJobName=training_job_name)
+                        tj_status = tj["TrainingJobStatus"]
+                        secondary = tj.get("SecondaryStatus", "")
+                        elapsed = ""
+                        if "TrainingStartTime" in tj:
+                            secs = (datetime.now(tj["TrainingStartTime"].tzinfo) - tj["TrainingStartTime"]).total_seconds()
+                            elapsed = f" | Elapsed={math.floor(secs//60)}m{int(secs%60)}s"
+                        logger.info(
+                            f"    Training '{training_job_name}': {tj_status} ({secondary}){elapsed}"
+                        )
+                    except Exception:
+                        pass
+
+            if exec_status in ("Succeeded", "Failed", "Stopped"):
+                logger.info(f"Pipeline finalizado com status: {exec_status}")
+                break
+
+            logger.info(f"  Pipeline: {exec_status} | steps {done_steps}/{total_steps} concluídos — aguardando {poll_interval}s...")
+            time.sleep(poll_interval)
+
+        # Para deploy, recuperar o training job do Pipeline e recriar estimator com session normal
         estimator = ga_estimator
+        if exec_status == "Succeeded":
+            try:
+                # Buscar o TrainingStep do Pipeline para obter o job name real
+                ga_step = next(
+                    (s for s in execution.list_steps()
+                     if s.get("Metadata", {}).get("TrainingJob")),
+                    None
+                )
+                if ga_step:
+                    training_job_name = ga_step["Metadata"]["TrainingJob"]["Arn"].split("/")[-1]
+                    from sagemaker.sklearn.estimator import SKLearn as _SKLearn
+                    estimator = _SKLearn.attach(training_job_name, sagemaker_session=session)
+                    logger.info(f"Estimator recuperado do Pipeline: {training_job_name}")
+            except Exception as e:
+                logger.warning(f"Não foi possível recuperar estimator do Pipeline: {e}")
         tuner = None
         warm_start_params = None
+        _phase(5, "", end=True)
 
     else:
         # ----- Modo manual (sem Pipeline) -----
@@ -1028,10 +1232,12 @@ def main():
             warm_start_params=warm_start_params,
             experiment_name=experiment_name,
         )
+        _phase(5, "", end=True)
 
     # ================================================================
     # 6. Aguardar Autopilot e comparar resultados
     # ================================================================
+    _phase(6, "Aguardar Autopilot e comparar resultados")
     autopilot_results = None
     if auto_ml and autopilot_job:
         autopilot_results = wait_for_autopilot(auto_ml, autopilot_job, session)
@@ -1051,21 +1257,20 @@ def main():
         if tuner:
             run.log_parameter("hpo_tuning_job", tuner.latest_tuning_job.name)
 
-    logger.info("\n" + "=" * 60)
-    logger.info("  COMPARAÇÃO DE RESULTADOS")
-    logger.info("=" * 60)
-    logger.info(f"  GA Training Job: {estimator.latest_training_job.name}")
-    logger.info(f"  GA Model: {estimator.model_data}")
-
+    _phase(6, "", end=True)
+    logger.info("  ┌─ COMPARAÇÃO DE RESULTADOS ─────────────────────────────┐")
+    logger.info(f"  │  GA Job  : {estimator.latest_training_job.name}")
+    logger.info(f"  │  GA Model: {estimator.model_data}")
     if autopilot_results:
-        logger.info(f"  Autopilot melhor candidato: {autopilot_results['candidate_name']}")
-        logger.info(f"  Autopilot {autopilot_results['metric_name']}: "
-                     f"{autopilot_results['metric_value']:.4f}")
-    logger.info("=" * 60)
+        logger.info(f"  │  Autopilot candidato : {autopilot_results['candidate_name']}")
+        logger.info(f"  │  Autopilot {autopilot_results['metric_name']}: "
+                    f"{autopilot_results['metric_value']:.4f}")
+    logger.info("  └──────────────────────────────────────────────────────────┘")
 
     # ================================================================
     # 7. Salvar métricas consolidadas no S3
     # ================================================================
+    _phase(7, "Salvar métricas consolidadas no S3")
     metrics = {
         "experiment_name": experiment_name,
         "pipeline_mode": args.use_pipeline,
@@ -1086,10 +1291,12 @@ def main():
         ContentType="application/json",
     )
     logger.info(f"Métricas salvas em s3://{args.bucket}/output/training_metrics.json")
+    _phase(7, "", end=True)
 
     # ================================================================
     # 8. Deploy dos endpoints
     # ================================================================
+    _phase(8, "Deploy dos endpoints de inferência")
     if not args.skip_deploy:
         # Deploy do modelo GA (endpoint principal com inference.py customizado)
         endpoint_name = deploy_sagemaker_endpoint(
@@ -1106,10 +1313,13 @@ def main():
             logger.info(f"Endpoint Autopilot ativo: {autopilot_endpoint}")
     else:
         logger.info("Deploy dos endpoints ignorado (--skip-deploy).")
+    _phase(8, "", end=True)
 
-    logger.info("=" * 60)
-    logger.info("  Pipeline concluído com sucesso!")
-    logger.info("=" * 60)
+    bar = "═" * 58
+    logger.info(f"╔{bar}╗")
+    logger.info("║  ✓ Pipeline concluído com sucesso!                      ║")
+    logger.info(f"║  Fim: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}                               ║")
+    logger.info(f"╚{bar}╝")
 
 
 if __name__ == "__main__":

@@ -75,8 +75,6 @@ resource "aws_iam_role_policy" "sagemaker_full_policy" {
           "sagemaker:AddTags",
           "sagemaker:CreateAutoMLJob",
           "sagemaker:DescribeAutoMLJob",
-          "sagemaker:ListAutoMLJobs",
-          "sagemaker:ListCandidatesForAutoMLJob",
           "sagemaker:CreateHyperParameterTuningJob",
           "sagemaker:DescribeHyperParameterTuningJob",
           "sagemaker:StopHyperParameterTuningJob",
@@ -124,7 +122,9 @@ resource "aws_iam_role_policy" "sagemaker_full_policy" {
           "sagemaker:ListEndpoints",
           "sagemaker:ListFeatureGroups",
           "sagemaker:ListPipelines",
-          "sagemaker:ListPipelineExecutions"
+          "sagemaker:ListPipelineExecutions",
+          "sagemaker:ListAutoMLJobs",
+          "sagemaker:ListCandidatesForAutoMLJob"
         ]
         Resource = "*"
       },

@@ -33,5 +33,7 @@ resource "aws_sagemaker_notebook_instance_lifecycle_configuration" "notebook_lc"
     bucket_name = local.bucket_name
     region      = var.aws_region
     project     = var.project_name
+    dev_mode    = var.dev_mode ? "true" : "false"
+    skip_deploy = var.skip_deploy ? "true" : "false"
   }))
 }
