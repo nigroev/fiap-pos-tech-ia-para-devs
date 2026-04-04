@@ -38,7 +38,7 @@ def add_cloudwatch_handler(log_group, region):
             log_stream_name=stream_name,
             boto3_session=boto3.Session(region_name=region),
             send_interval=10,
-            log_group_retention_days=30,
+            create_log_group=False,
         )
         cw_handler.setFormatter(logging.Formatter(
             fmt="%(asctime)s [%(levelname)s] %(message)s",

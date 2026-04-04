@@ -139,7 +139,7 @@ Os logs também podem ser acessados pelo **Console AWS** em CloudWatch → Log G
 ```python
 import boto3, json
 
-runtime = boto3.client("sagemaker-runtime", region_name="us-east-1")
+runtime = boto3.client("sagemaker-runtime", region_name="sa-east-1")
 
 payload = json.dumps({
     "age": 65,
@@ -199,11 +199,21 @@ bash destroy.sh   # ou: terraform destroy
 
 | Variável | Default | Descrição |
 |----------|---------|-----------|
-| `aws_region` | `us-east-1` | Região AWS |
+| `aws_region` | `sa-east-1` | Região AWS |
 | `project_name` | `avc-stroke-prediction` | Prefixo de nomenclatura |
 | `environment` | `dev` | Ambiente (dev/staging/prod) |
-| `notebook_instance_type` | `ml.t3.medium` | Tipo de instância do notebook |
+| `notebook_instance_type` | `ml.m5.xlarge` | Tipo de instância do notebook |
 | `notebook_volume_size` | `20` | Volume EBS em GB |
-| `training_instance_type` | `ml.m5.large` | Instância para training jobs |
-| `endpoint_instance_type` | `ml.t2.medium` | Instância do endpoint |
+| `training_instance_type` | `ml.m5.xlarge` | Instância para training jobs |
+| `training_max_run_seconds` | `1800` | Tempo máximo por Training Job (segundos) |
+| `training_max_spot_wait_seconds` | `3600` | Tempo máximo de espera por instância spot |
+| `endpoint_instance_type` | `ml.m5.xlarge` | Instância do endpoint |
+| `hpo_max_jobs` | `20` | Número máximo de jobs no HPO Tuning |
+| `hpo_max_parallel_jobs` | `4` | Jobs paralelos no HPO Tuning |
+| `ga_population` | `10` | Tamanho da população do Algoritmo Genético |
+| `ga_generations` | `5` | Número de gerações do GA |
+| `autopilot_max_candidates` | `3` | Candidatos máximos do Autopilot AutoML |
+| `autopilot_timeout_minutes` | `0` | Timeout do Autopilot (0 = sem limite) |
 | `s3_force_destroy` | `true` | Destruir bucket com objetos |
+| `dev_mode` | `true` | Ativa overrides reduzidos via `locals` no Terraform |
+| `skip_deploy` | `false` | Pular deploy dos endpoints |

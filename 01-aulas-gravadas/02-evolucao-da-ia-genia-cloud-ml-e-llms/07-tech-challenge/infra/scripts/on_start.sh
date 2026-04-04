@@ -41,10 +41,10 @@ aws s3 cp "s3://$${BUCKET_NAME}/scripts/pipeline/" "$${WORK_DIR}/pipeline/" --re
 nohup bash -c "
   source /home/ec2-user/anaconda3/bin/activate python3
   cd $${WORK_DIR}
-  SKIP_DEPLOY_FLAG=""
-  if [ "$${SKIP_DEPLOY}" = "true" ]; then SKIP_DEPLOY_FLAG="--skip-deploy"; fi
-  LOG_GROUP_FLAG=""
-  if [ -n "$${LOG_GROUP}" ]; then LOG_GROUP_FLAG="--log-group $${LOG_GROUP}"; fi
+  SKIP_DEPLOY_FLAG=\"\"
+  if [ \"$${SKIP_DEPLOY}\" = \"true\" ]; then SKIP_DEPLOY_FLAG=\"--skip-deploy\"; fi
+  LOG_GROUP_FLAG=\"\"
+  if [ -n \"$${LOG_GROUP}\" ]; then LOG_GROUP_FLAG=\"--log-group $${LOG_GROUP}\"; fi
   python train_and_deploy.py \
     --bucket $${BUCKET_NAME} \
     --region $${REGION} \

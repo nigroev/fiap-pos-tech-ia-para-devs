@@ -311,19 +311,20 @@ O orquestrador (`train_and_deploy.py`) executa **8 fases sequenciais**, cada uma
 | **7/8** | Métricas | Salva `training_metrics.json` consolidado no S3 (GA params, Autopilot F1, warm start config, etc.) e loga no SageMaker Experiments | ~1s |
 | **8/8** | Deploy | Faz deploy do melhor modelo como SageMaker Endpoint com `inference.py` customizado. Aceita JSON e CSV. Se Autopilot venceu, deploya endpoint separado para comparação | ~5-10min |
 
-### Modo Desenvolvimento (`--dev`)
+### Modo Desenvolvimento (`dev_mode = true`)
 
-Para validação rápida, o flag `--dev` reduz drasticamente todos os parâmetros:
+Quando `dev_mode = true` no `terraform.tfvars`, o Terraform calcula automaticamente valores reduzidos via `locals` e passa-os diretamente ao script Python — sem nenhuma flag `--dev` no código:
 
 | Parâmetro | Modo Normal | Modo Dev |
 |-----------|-------------|----------|
-| HPO jobs | 6 (3 paralelos) | 3 (3 paralelos) |
+| HPO jobs | 20 (4 paralelos) | 3 (3 paralelos) |
 | GA população / gerações | 10 / 5 | 4 / 3 |
-| Autopilot candidatos | 5 | 3 + timeout 20min |
+| Autopilot candidatos | 3 | 3 + timeout 20min |
 | max-run por job | 1800s (30min) | 600s (10min) |
+| max-spot-wait | 3600s (60min) | 900s (15min) |
 | Tempo total estimado | ~30-50min | ~15-25min |
 
-O modo dev é ativado via Terraform (`dev_mode = true` em `terraform.tfvars`) e passado automaticamente ao script pelo lifecycle `on_start.sh`.
+Os overrides são definidos em `main.tf` (`locals`) e injetados no `on_start.sh` via `templatefile`.
 
 ### Diferenças: Notebook Local vs. Cloud (SageMaker)
 
@@ -415,8 +416,12 @@ Edite `terraform.tfvars` para ajustar parâmetros:
 ```hcl
 aws_region             = "sa-east-1"
 training_instance_type = "ml.m5.large"
-dev_mode               = true     # Modo rápido para testes
+dev_mode               = true     # Valores reduzidos calculados automaticamente
 skip_deploy            = false    # true para pular deploy dos endpoints
+ga_population          = 10       # Tamanho da população do GA
+ga_generations         = 5        # Gerações do GA
+hpo_max_jobs           = 20       # Jobs do HPO Tuning
+autopilot_max_candidates = 3      # Candidatos do Autopilot
 ```
 
 ---

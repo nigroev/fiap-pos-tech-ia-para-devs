@@ -145,8 +145,10 @@ resource "aws_iam_role_policy" "sagemaker_full_policy" {
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
           "logs:DescribeLogStreams",
-          "logs:GetLogEvents"
+          "logs:GetLogEvents",
+          "logs:PutRetentionPolicy"
         ]
         Resource = "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:/aws/sagemaker/*"
       },
