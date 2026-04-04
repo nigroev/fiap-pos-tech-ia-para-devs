@@ -2,7 +2,7 @@
 pipeline — Módulos do orquestrador de treinamento e deploy via SageMaker
 """
 
-from .config import BRT, logger, get_train_source_dir, add_cloudwatch_handler
+from .config import BRT, logger, get_train_source_dir
 from .data_ingestion import load_nhanes_data, preprocess_data, upload_dataset_to_s3
 from .feature_store import (
     create_or_get_feature_group,

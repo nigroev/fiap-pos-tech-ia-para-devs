@@ -36,8 +36,3 @@ output "models_s3_uri" {
   description = "URI S3 para o diretório de modelos"
   value       = "s3://${aws_s3_bucket.data_bucket.id}/models/"
 }
-
-output "cloudwatch_log_group" {
-  description = "CloudWatch Log Group para logs do orquestrador"
-  value       = aws_cloudwatch_log_group.train_and_deploy.name
-}

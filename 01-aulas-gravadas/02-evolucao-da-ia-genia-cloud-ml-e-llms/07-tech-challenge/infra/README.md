@@ -19,7 +19,7 @@ Infraestrutura como código (IaC) para deploy completo do pipeline de ML de pred
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────────┐ │
 │  │                    IAM Role                                  │ │
-│  │  - S3 Access  - SageMaker  - CloudWatch  - ECR              │ │
+│  │  - S3 Access  - SageMaker  - CloudWatch Metrics  - ECR       │ │
 │  └─────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -29,11 +29,10 @@ Infraestrutura como código (IaC) para deploy completo do pipeline de ML de pred
 | Recurso | Descrição |
 |---------|-----------|
 | **S3 Bucket** | Armazena datasets NHANES processados, modelos treinados e scripts |
-| **IAM Role** | Role com permissões para SageMaker, S3, CloudWatch e ECR |
+| **IAM Role** | Role com permissões para SageMaker, S3, CloudWatch Metrics e ECR |
 | **SageMaker Notebook Instance** | Instância EC2 gerenciada para desenvolvimento e treinamento |
 | **Lifecycle Configuration** | Scripts que configuram e executam o pipeline automaticamente |
 | **SageMaker Endpoint** | Endpoint de inferência em tempo real (criado pelo script de deploy) |
-| **CloudWatch Log Group** | Logs em tempo real do orquestrador (`/aws/sagemaker/<prefix>/train-and-deploy`) |
 
 ## Estrutura de Pastas
 
@@ -48,7 +47,6 @@ infra/
 ├── s3.tf                            # Bucket S3 + uploads
 ├── sagemaker_notebook.tf            # Notebook instance + lifecycle config
 ├── sagemaker_endpoint.tf            # Documentação do endpoint (criado via SDK)
-├── cloudwatch.tf                    # CloudWatch Log Group para logs do orquestrador
 ├── terraform.tfvars.example         # Exemplo de variáveis
 ├── bootstrap.sh                     # Setup: limpa jobs + terraform apply
 ├── destroy.sh                       # Teardown completo da infraestrutura
@@ -118,21 +116,6 @@ No SageMaker Notebook, abra um terminal e execute:
 ```bash
 tail -f /home/ec2-user/SageMaker/train_and_deploy.log
 ```
-
-Ou via **CloudWatch Logs** (tempo real, sem acesso ao notebook):
-
-```bash
-# Ver log streams disponíveis
-aws logs describe-log-streams \
-  --log-group-name /aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy \
-  --region sa-east-1 --query 'logStreams[*].logStreamName'
-
-# Acompanhar logs em tempo real
-aws logs tail /aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy \
-  --region sa-east-1 --follow
-```
-
-Os logs também podem ser acessados pelo **Console AWS** em CloudWatch → Log Groups → `/aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy`.
 
 ### 7. Testar o endpoint
 

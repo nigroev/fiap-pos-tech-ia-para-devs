@@ -10,7 +10,6 @@ BUCKET_NAME="${bucket_name}"
 REGION="${region}"
 PROJECT="${project}"
 SKIP_DEPLOY="${skip_deploy}"
-LOG_GROUP="${log_group}"
 TRAINING_INSTANCE_TYPE="${training_instance_type}"
 ENDPOINT_INSTANCE_TYPE="${endpoint_instance_type}"
 HPO_MAX_JOBS="${hpo_max_jobs}"
@@ -41,10 +40,9 @@ aws s3 cp "s3://$${BUCKET_NAME}/scripts/pipeline/" "$${WORK_DIR}/pipeline/" --re
 nohup bash -c "
   source /home/ec2-user/anaconda3/bin/activate python3
   cd $${WORK_DIR}
+  pip install -q -r requirements.txt
   SKIP_DEPLOY_FLAG=\"\"
   if [ \"$${SKIP_DEPLOY}\" = \"true\" ]; then SKIP_DEPLOY_FLAG=\"--skip-deploy\"; fi
-  LOG_GROUP_FLAG=\"\"
-  if [ -n \"$${LOG_GROUP}\" ]; then LOG_GROUP_FLAG=\"--log-group $${LOG_GROUP}\"; fi
   python train_and_deploy.py \
     --bucket $${BUCKET_NAME} \
     --region $${REGION} \
@@ -61,7 +59,6 @@ nohup bash -c "
     --max-run $${MAX_RUN} \
     --max-spot-wait $${MAX_SPOT_WAIT} \
     $${SKIP_DEPLOY_FLAG} \
-    $${LOG_GROUP_FLAG} \
     > /home/ec2-user/SageMaker/train_and_deploy.log 2>&1
   source /home/ec2-user/anaconda3/bin/deactivate
 " &

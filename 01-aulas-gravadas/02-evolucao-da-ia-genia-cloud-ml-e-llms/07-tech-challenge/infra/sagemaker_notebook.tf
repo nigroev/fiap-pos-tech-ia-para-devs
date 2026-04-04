@@ -14,6 +14,24 @@ resource "aws_sagemaker_notebook_instance" "notebook" {
   tags = {
     Name = "${local.name_prefix}-notebook"
   }
+
+  # Garantir que os scripts estejam no S3 antes do notebook iniciar,
+  # pois on_create.sh baixa tudo via aws s3 cp.
+  depends_on = [
+    aws_s3_object.training_script,
+    aws_s3_object.train_script,
+    aws_s3_object.requirements,
+    aws_s3_object.inference_script,
+    aws_s3_object.pipeline_init,
+    aws_s3_object.pipeline_config,
+    aws_s3_object.pipeline_data_ingestion,
+    aws_s3_object.pipeline_feature_store,
+    aws_s3_object.pipeline_autopilot,
+    aws_s3_object.pipeline_training,
+    aws_s3_object.pipeline_sagemaker_pipeline,
+    aws_s3_object.pipeline_deployment,
+    aws_s3_object.pipeline_metrics,
+  ]
 }
 
 # ==============================================================================
@@ -34,7 +52,6 @@ resource "aws_sagemaker_notebook_instance_lifecycle_configuration" "notebook_lc"
     region                   = var.aws_region
     project                  = var.project_name
     skip_deploy              = var.skip_deploy ? "true" : "false"
-    log_group                = aws_cloudwatch_log_group.train_and_deploy.name
     training_instance_type   = var.training_instance_type
     endpoint_instance_type   = var.endpoint_instance_type
     hpo_max_jobs             = local.hpo_max_jobs

@@ -215,7 +215,6 @@ tech-challenge-fase-2/
     ├── s3.tf                             # Bucket S3 (dados, modelos, scripts)
     ├── sagemaker_notebook.tf             # Notebook Instance + Lifecycle Configuration
     ├── sagemaker_endpoint.tf             # Documentação do endpoint (criado via SDK)
-    ├── cloudwatch.tf                     # CloudWatch Log Group para logs do orquestrador
     ├── variables.tf                      # Variáveis configuráveis (instâncias, HPO, GA, Autopilot)
     ├── terraform.tfvars                  # Valores padrão para o ambiente dev
     ├── outputs.tf                        # Outputs (bucket, role ARN, notebook URL)
@@ -358,7 +357,6 @@ Os overrides são definidos em `main.tf` (`locals`) e injetados no `on_start.sh`
 | **SageMaker Endpoint** | Inferência em tempo real via HTTPS |
 | **S3** | Armazenamento de dados, modelos, scripts e métricas |
 | **IAM** | Role e políticas de acesso (least privilege) |
-| **CloudWatch Logs** | Logs em tempo real do orquestrador via watchtower (retenção 30 dias) |
 | **Glue** | Catálogo de dados para Feature Store offline |
 
 ### Como Executar (Cloud)
@@ -387,10 +385,6 @@ bash bootstrap.sh
 ```bash
 # Via SageMaker Console → Notebook Instances → Open JupyterLab → Terminal:
 tail -f /home/ec2-user/SageMaker/train_and_deploy.log
-
-# Ou via CloudWatch Logs (sem acesso ao notebook):
-aws logs tail /aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy \
-  --region sa-east-1 --follow
 ```
 
 #### Parar / Iniciar (economia de custo)

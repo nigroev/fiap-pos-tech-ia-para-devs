@@ -41,9 +41,33 @@ def create_or_get_feature_group(session, role_arn, bucket, project):
 
     sm_client = session.sagemaker_client
     try:
-        sm_client.describe_feature_group(FeatureGroupName=feature_group_name)
-        logger.info(f"Feature Group já existe: {feature_group_name}")
-        return fg, feature_group_name
+        desc = sm_client.describe_feature_group(FeatureGroupName=feature_group_name)
+
+        # Verificar se o bucket do offline store ainda é válido
+        offline_cfg = desc.get("OfflineStoreConfig", {})
+        resolved_uri = offline_cfg.get("S3StorageConfig", {}).get(
+            "ResolvedOutputS3Uri", ""
+        )
+        expected_prefix = f"s3://{bucket}/"
+
+        if resolved_uri and not resolved_uri.startswith(expected_prefix):
+            logger.warning(
+                f"Feature Group aponta para bucket diferente: {resolved_uri}"
+            )
+            logger.info(f"Deletando Feature Group antigo: {feature_group_name}")
+            sm_client.delete_feature_group(FeatureGroupName=feature_group_name)
+            for _ in range(30):
+                try:
+                    sm_client.describe_feature_group(
+                        FeatureGroupName=feature_group_name
+                    )
+                    time.sleep(10)
+                except sm_client.exceptions.ResourceNotFound:
+                    break
+            logger.info(f"Feature Group deletado, recriando com bucket correto")
+        else:
+            logger.info(f"Feature Group já existe: {feature_group_name}")
+            return fg, feature_group_name
     except sm_client.exceptions.ResourceNotFound:
         pass
 

@@ -42,7 +42,6 @@ from sagemaker.workflow.pipeline_context import PipelineSession
 from pipeline import (
     BRT,
     logger,
-    add_cloudwatch_handler,
     load_nhanes_data,
     preprocess_data,
     upload_dataset_to_s3,
@@ -99,10 +98,6 @@ def main():
     parser.add_argument("--skip-autopilot", action="store_true", help="Pular Autopilot AutoML")
     parser.add_argument("--skip-feature-store", action="store_true", help="Pular Feature Store")
     parser.add_argument(
-        "--log-group", type=str, default="",
-        help="CloudWatch Log Group para enviar logs em tempo real (ex: /aws/sagemaker/avc-dev/train-and-deploy)"
-    )
-    parser.add_argument(
         "--use-pipeline",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -143,10 +138,6 @@ def main():
         help="Timeout em minutos para aguardar Autopilot (0=sem limite)"
     )
     args = parser.parse_args()
-
-    # Ativar CloudWatch Logs (se configurado) — antes de qualquer log
-    if args.log_group:
-        add_cloudwatch_handler(args.log_group, args.region)
 
     bar = "═" * 58
     logger.info(f"╔{bar}╗")
