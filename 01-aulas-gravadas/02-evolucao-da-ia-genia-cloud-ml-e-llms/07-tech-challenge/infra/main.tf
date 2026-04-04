@@ -11,7 +11,7 @@ locals {
   ga_pop                   = var.dev_mode ? 4 : var.ga_population
   ga_gen                   = var.dev_mode ? 3 : var.ga_generations
   autopilot_max_candidates = var.dev_mode ? 3 : var.autopilot_max_candidates
-  autopilot_timeout        = var.dev_mode ? 20 : var.autopilot_timeout_minutes
+  autopilot_timeout        = var.dev_mode ? 35 : var.autopilot_timeout_minutes
   max_run                  = var.dev_mode ? 600 : var.training_max_run_seconds
   max_spot_wait            = var.dev_mode ? 900 : var.training_max_spot_wait_seconds
 }
