@@ -33,6 +33,7 @@ Infraestrutura como código (IaC) para deploy completo do pipeline de ML de pred
 | **SageMaker Notebook Instance** | Instância EC2 gerenciada para desenvolvimento e treinamento |
 | **Lifecycle Configuration** | Scripts que configuram e executam o pipeline automaticamente |
 | **SageMaker Endpoint** | Endpoint de inferência em tempo real (criado pelo script de deploy) |
+| **CloudWatch Log Group** | Logs em tempo real do orquestrador (`/aws/sagemaker/<prefix>/train-and-deploy`) |
 
 ## Estrutura de Pastas
 
@@ -47,6 +48,7 @@ infra/
 ├── s3.tf                            # Bucket S3 + uploads
 ├── sagemaker_notebook.tf            # Notebook instance + lifecycle config
 ├── sagemaker_endpoint.tf            # Documentação do endpoint (criado via SDK)
+├── cloudwatch.tf                    # CloudWatch Log Group para logs do orquestrador
 ├── terraform.tfvars.example         # Exemplo de variáveis
 ├── bootstrap.sh                     # Setup: limpa jobs + terraform apply
 ├── destroy.sh                       # Teardown completo da infraestrutura
@@ -54,8 +56,19 @@ infra/
 ├── scripts/
 │   ├── on_create.sh                 # Lifecycle: instalação inicial
 │   ├── on_start.sh                  # Lifecycle: dispara treinamento
-│   ├── train_and_deploy.py          # Pipeline completo de ML
+│   ├── train_and_deploy.py          # Orquestrador (CLI + 8 fases)
+│   ├── train.py                     # Script de treinamento (SageMaker container)
 │   ├── requirements.txt             # Dependências Python
+│   ├── pipeline/                    # Módulos do orquestrador
+│   │   ├── __init__.py              # Exports do pacote
+│   │   ├── config.py                # Logging, BRT timezone, diretório de treino
+│   │   ├── data_ingestion.py        # Coleta NHANES, pré-processamento, upload S3
+│   │   ├── feature_store.py         # Feature Group offline (criação, ingestão)
+│   │   ├── autopilot.py             # AutoML (lançamento assíncrono, polling)
+│   │   ├── training.py              # HPO Tuning Job, GA Training Job
+│   │   ├── sagemaker_pipeline.py    # SageMaker Pipeline (TuningStep + TrainingStep)
+│   │   ├── deployment.py            # Deploy e gestão de endpoints
+│   │   └── metrics.py               # Experiments e métricas consolidadas
 │   └── inference_src/
 │       └── inference.py             # Script de inferência do endpoint
 └── README.md                        # Este arquivo
@@ -105,6 +118,21 @@ No SageMaker Notebook, abra um terminal e execute:
 ```bash
 tail -f /home/ec2-user/SageMaker/train_and_deploy.log
 ```
+
+Ou via **CloudWatch Logs** (tempo real, sem acesso ao notebook):
+
+```bash
+# Ver log streams disponíveis
+aws logs describe-log-streams \
+  --log-group-name /aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy \
+  --region sa-east-1 --query 'logStreams[*].logStreamName'
+
+# Acompanhar logs em tempo real
+aws logs tail /aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy \
+  --region sa-east-1 --follow
+```
+
+Os logs também podem ser acessados pelo **Console AWS** em CloudWatch → Log Groups → `/aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy`.
 
 ### 7. Testar o endpoint
 

@@ -30,10 +30,20 @@ resource "aws_sagemaker_notebook_instance_lifecycle_configuration" "notebook_lc"
   }))
 
   on_start = base64encode(templatefile("${path.module}/scripts/on_start.sh", {
-    bucket_name = local.bucket_name
-    region      = var.aws_region
-    project     = var.project_name
-    dev_mode    = var.dev_mode ? "true" : "false"
-    skip_deploy = var.skip_deploy ? "true" : "false"
+    bucket_name              = local.bucket_name
+    region                   = var.aws_region
+    project                  = var.project_name
+    skip_deploy              = var.skip_deploy ? "true" : "false"
+    log_group                = aws_cloudwatch_log_group.train_and_deploy.name
+    training_instance_type   = var.training_instance_type
+    endpoint_instance_type   = var.endpoint_instance_type
+    hpo_max_jobs             = local.hpo_max_jobs
+    hpo_max_parallel_jobs    = local.hpo_max_parallel_jobs
+    ga_pop                   = local.ga_pop
+    ga_gen                   = local.ga_gen
+    autopilot_max_candidates = local.autopilot_max_candidates
+    autopilot_timeout        = local.autopilot_timeout
+    max_run                  = local.max_run
+    max_spot_wait            = local.max_spot_wait
   }))
 }

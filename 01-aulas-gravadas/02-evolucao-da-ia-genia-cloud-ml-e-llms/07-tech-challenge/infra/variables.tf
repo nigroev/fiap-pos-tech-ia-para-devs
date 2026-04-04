@@ -83,6 +83,22 @@ variable "hpo_max_parallel_jobs" {
 }
 
 # ==============================================================================
+# Algoritmo Genético
+# ==============================================================================
+
+variable "ga_population" {
+  description = "Tamanho da população do Algoritmo Genético"
+  type        = number
+  default     = 10
+}
+
+variable "ga_generations" {
+  description = "Número de gerações do Algoritmo Genético"
+  type        = number
+  default     = 5
+}
+
+# ==============================================================================
 # Autopilot
 # ==============================================================================
 
@@ -90,6 +106,12 @@ variable "autopilot_max_candidates" {
   description = "Número máximo de modelos candidatos no Autopilot AutoML"
   type        = number
   default     = 3
+}
+
+variable "autopilot_timeout_minutes" {
+  description = "Timeout em minutos para aguardar Autopilot (0 = sem limite)"
+  type        = number
+  default     = 0
 }
 
 # ==============================================================================

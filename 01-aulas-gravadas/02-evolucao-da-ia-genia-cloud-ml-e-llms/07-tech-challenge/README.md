@@ -34,6 +34,8 @@ Construir uma solução com foco em IA para processamento de dados médicos, apl
 
 * [Fase 2 — Vídeo de apresentação do projeto](https://youtu.be/gmO5QkQ1pzQ)
 
+* EXTRA - [Fase 2 — Vídeo de apresentação do projeto em implantação em núvem (AWS)](https://youtu.be/gmO5QkQ1pzQ)
+
 * [Fase 2 — Notebook Tech Challenge](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/rm369853-tech-challenge-fase-2.ipynb "Notebook Tech Challenge Fase 2");
 
 * EXTRA - [Fase 2 — Implementação em núvem (AWS)](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/infra "Implementação em núvem (AWS)");
@@ -213,6 +215,7 @@ tech-challenge-fase-2/
     ├── s3.tf                             # Bucket S3 (dados, modelos, scripts)
     ├── sagemaker_notebook.tf             # Notebook Instance + Lifecycle Configuration
     ├── sagemaker_endpoint.tf             # Documentação do endpoint (criado via SDK)
+    ├── cloudwatch.tf                     # CloudWatch Log Group para logs do orquestrador
     ├── variables.tf                      # Variáveis configuráveis (instâncias, HPO, GA, Autopilot)
     ├── terraform.tfvars                  # Valores padrão para o ambiente dev
     ├── outputs.tf                        # Outputs (bucket, role ARN, notebook URL)
@@ -220,9 +223,19 @@ tech-challenge-fase-2/
     └── scripts/
         ├── on_create.sh                  # Lifecycle: instala dependências no notebook
         ├── on_start.sh                   # Lifecycle: dispara pipeline de treinamento
-        ├── train_and_deploy.py           # Orquestrador (8 fases do pipeline)
+        ├── train_and_deploy.py           # Orquestrador (CLI + 8 fases do pipeline)
         ├── train.py                      # Script de treinamento (executado pelo SageMaker)
         ├── requirements.txt              # Dependências do ambiente SageMaker
+        ├── pipeline/                     # Módulos do orquestrador
+        │   ├── __init__.py               # Exports do pacote
+        │   ├── config.py                 # Logging, BRT timezone, diretório de treino
+        │   ├── data_ingestion.py         # Coleta NHANES, pré-processamento, upload S3
+        │   ├── feature_store.py          # Feature Group offline (criação, ingestão)
+        │   ├── autopilot.py              # AutoML (lançamento assíncrono, polling)
+        │   ├── training.py               # HPO Tuning Job, GA Training Job
+        │   ├── sagemaker_pipeline.py     # SageMaker Pipeline (TuningStep + TrainingStep)
+        │   ├── deployment.py             # Deploy e gestão de endpoints
+        │   └── metrics.py                # Experiments e métricas consolidadas
         └── inference_src/
             └── inference.py              # Script de inferência do endpoint
 ```
@@ -344,7 +357,7 @@ O modo dev é ativado via Terraform (`dev_mode = true` em `terraform.tfvars`) e 
 | **SageMaker Endpoint** | Inferência em tempo real via HTTPS |
 | **S3** | Armazenamento de dados, modelos, scripts e métricas |
 | **IAM** | Role e políticas de acesso (least privilege) |
-| **CloudWatch** | Logs e métricas de monitoramento |
+| **CloudWatch Logs** | Logs em tempo real do orquestrador via watchtower (retenção 30 dias) |
 | **Glue** | Catálogo de dados para Feature Store offline |
 
 ### Como Executar (Cloud)
@@ -373,6 +386,10 @@ bash bootstrap.sh
 ```bash
 # Via SageMaker Console → Notebook Instances → Open JupyterLab → Terminal:
 tail -f /home/ec2-user/SageMaker/train_and_deploy.log
+
+# Ou via CloudWatch Logs (sem acesso ao notebook):
+aws logs tail /aws/sagemaker/avc-stroke-prediction-dev/train-and-deploy \
+  --region sa-east-1 --follow
 ```
 
 #### Parar / Iniciar (economia de custo)

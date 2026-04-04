@@ -67,6 +67,73 @@ resource "aws_s3_object" "inference_script" {
 }
 
 # ==============================================================================
+# Upload do pacote pipeline/ (módulos do orquestrador)
+# ==============================================================================
+
+resource "aws_s3_object" "pipeline_init" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/__init__.py"
+  source = "${path.module}/scripts/pipeline/__init__.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/__init__.py")
+}
+
+resource "aws_s3_object" "pipeline_config" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/config.py"
+  source = "${path.module}/scripts/pipeline/config.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/config.py")
+}
+
+resource "aws_s3_object" "pipeline_data_ingestion" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/data_ingestion.py"
+  source = "${path.module}/scripts/pipeline/data_ingestion.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/data_ingestion.py")
+}
+
+resource "aws_s3_object" "pipeline_feature_store" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/feature_store.py"
+  source = "${path.module}/scripts/pipeline/feature_store.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/feature_store.py")
+}
+
+resource "aws_s3_object" "pipeline_autopilot" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/autopilot.py"
+  source = "${path.module}/scripts/pipeline/autopilot.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/autopilot.py")
+}
+
+resource "aws_s3_object" "pipeline_training" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/training.py"
+  source = "${path.module}/scripts/pipeline/training.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/training.py")
+}
+
+resource "aws_s3_object" "pipeline_sagemaker_pipeline" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/sagemaker_pipeline.py"
+  source = "${path.module}/scripts/pipeline/sagemaker_pipeline.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/sagemaker_pipeline.py")
+}
+
+resource "aws_s3_object" "pipeline_deployment" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/deployment.py"
+  source = "${path.module}/scripts/pipeline/deployment.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/deployment.py")
+}
+
+resource "aws_s3_object" "pipeline_metrics" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/pipeline/metrics.py"
+  source = "${path.module}/scripts/pipeline/metrics.py"
+  etag   = filemd5("${path.module}/scripts/pipeline/metrics.py")
+}
+
+# ==============================================================================
 # Prefixos (pastas lógicas) — criados como objetos vazios
 # ==============================================================================
 
