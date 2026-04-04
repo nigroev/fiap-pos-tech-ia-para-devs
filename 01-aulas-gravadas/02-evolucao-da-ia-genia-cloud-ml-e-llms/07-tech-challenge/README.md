@@ -207,6 +207,7 @@ tech-challenge-fase-2/
 └── infra/                                # Implementação em nuvem (AWS SageMaker)
     ├── bootstrap.sh                      # Setup inicial: limpa jobs e executa terraform apply
     ├── destroy.sh                        # Teardown completo da infraestrutura
+    ├── stop_start_notebook.sh            # Para/inicia notebook + endpoints + jobs
     ├── main.tf                           # Locals e data sources
     ├── iam.tf                            # IAM Role e políticas do SageMaker
     ├── s3.tf                             # Bucket S3 (dados, modelos, scripts)
@@ -372,6 +373,15 @@ bash bootstrap.sh
 ```bash
 # Via SageMaker Console → Notebook Instances → Open JupyterLab → Terminal:
 tail -f /home/ec2-user/SageMaker/train_and_deploy.log
+```
+
+#### Parar / Iniciar (economia de custo)
+
+```bash
+cd infra/
+bash stop_start_notebook.sh status  # ver estado de todos os recursos
+bash stop_start_notebook.sh stop    # para jobs + deleta endpoints + para notebook
+bash stop_start_notebook.sh start   # inicia notebook (on_start.sh roda automaticamente)
 ```
 
 #### Teardown

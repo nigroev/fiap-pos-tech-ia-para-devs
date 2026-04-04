@@ -48,6 +48,9 @@ infra/
 ├── sagemaker_notebook.tf            # Notebook instance + lifecycle config
 ├── sagemaker_endpoint.tf            # Documentação do endpoint (criado via SDK)
 ├── terraform.tfvars.example         # Exemplo de variáveis
+├── bootstrap.sh                     # Setup: limpa jobs + terraform apply
+├── destroy.sh                       # Teardown completo da infraestrutura
+├── stop_start_notebook.sh           # Para/inicia notebook + dependências
 ├── scripts/
 │   ├── on_create.sh                 # Lifecycle: instalação inicial
 │   ├── on_start.sh                  # Lifecycle: dispara treinamento
@@ -133,10 +136,23 @@ result = json.loads(response["Body"].read().decode())
 print(result)
 ```
 
+### 8. Parar/Iniciar notebook (economia de custo)
+
+```bash
+# Ver estado atual de todos os recursos
+bash stop_start_notebook.sh status
+
+# Parar tudo (jobs, endpoints, notebook)
+bash stop_start_notebook.sh stop
+
+# Iniciar notebook (on_start.sh roda automaticamente)
+bash stop_start_notebook.sh start
+```
+
 ## Destruir Infraestrutura
 
 ```bash
-terraform destroy
+bash destroy.sh   # ou: terraform destroy
 ```
 
 > **Atenção:** O bucket S3 será destruído mesmo com objetos dentro (configurado com `force_destroy = true`). Altere `s3_force_destroy = false` em produção.

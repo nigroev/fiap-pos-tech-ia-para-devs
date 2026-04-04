@@ -57,7 +57,7 @@ variable "training_max_spot_wait_seconds" {
 variable "endpoint_instance_type" {
   description = "Tipo de instância EC2 para o endpoint de inferência"
   type        = string
-  default     = "ml.t3.medium"
+  default     = "ml.m5.xlarge"
 }
 
 variable "endpoint_initial_instance_count" {
@@ -73,13 +73,13 @@ variable "endpoint_initial_instance_count" {
 variable "hpo_max_jobs" {
   description = "Número máximo de jobs no Hyperparameter Tuning"
   type        = number
-  default     = 3
+  default     = 20
 }
 
 variable "hpo_max_parallel_jobs" {
   description = "Número máximo de jobs paralelos no Hyperparameter Tuning"
   type        = number
-  default     = 3
+  default     = 4
 }
 
 # ==============================================================================

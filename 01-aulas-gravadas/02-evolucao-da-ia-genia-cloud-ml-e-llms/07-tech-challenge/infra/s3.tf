@@ -59,6 +59,13 @@ resource "aws_s3_object" "requirements" {
   etag   = filemd5("${path.module}/scripts/requirements.txt")
 }
 
+resource "aws_s3_object" "inference_script" {
+  bucket = aws_s3_bucket.data_bucket.id
+  key    = "scripts/inference_src/inference.py"
+  source = "${path.module}/scripts/inference_src/inference.py"
+  etag   = filemd5("${path.module}/scripts/inference_src/inference.py")
+}
+
 # ==============================================================================
 # Prefixos (pastas lógicas) — criados como objetos vazios
 # ==============================================================================
