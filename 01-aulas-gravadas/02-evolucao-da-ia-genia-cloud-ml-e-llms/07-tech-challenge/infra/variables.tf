@@ -57,7 +57,7 @@ variable "training_max_spot_wait_seconds" {
 variable "endpoint_instance_type" {
   description = "Tipo de instância EC2 para o endpoint de inferência"
   type        = string
-  default     = "ml.m5.xlarge"
+  default     = "ml.t2.large"
 }
 
 variable "endpoint_initial_instance_count" {

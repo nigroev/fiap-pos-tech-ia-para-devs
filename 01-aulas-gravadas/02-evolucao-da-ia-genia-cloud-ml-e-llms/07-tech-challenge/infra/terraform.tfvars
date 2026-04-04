@@ -4,7 +4,7 @@ environment            = "dev"
 notebook_instance_type = "ml.m5.xlarge"
 notebook_volume_size   = 20
 training_instance_type = "ml.m5.large"
-endpoint_instance_type = "ml.t3.medium"
+endpoint_instance_type = "ml.t2.large"
 s3_force_destroy       = true
 
 # HPO Tuning Job
@@ -17,11 +17,11 @@ ga_generations = 5
 
 # Autopilot
 autopilot_max_candidates  = 3
-autopilot_timeout_minutes = 0   # 0 = sem limite
+autopilot_timeout_minutes = 0 # 0 = sem limite
 
 # Training Job timeouts
-training_max_run_seconds       = 1800  # 30min por job
-training_max_spot_wait_seconds = 3600  # 60min de espera spot
+training_max_run_seconds       = 1800 # 30min por job
+training_max_spot_wait_seconds = 3600 # 60min de espera spot
 
 # Modo desenvolvimento: true = Terraform calcula valores reduzidos automaticamente
 # (HPO 3 jobs, GA pop=4 gen=3, Autopilot timeout=20min, max-run=600s)
