@@ -36,6 +36,8 @@ Construir uma solução com foco em IA para processamento de dados médicos, apl
 
 * [Fase 2 — Notebook Tech Challenge](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/rm369853-tech-challenge-fase-2.ipynb "Notebook Tech Challenge Fase 2");
 
+* EXTRA - [Fase 2 — Implementação em núvem (AWS)](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/blob/feature/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge/infra "Implementação em núvem (AWS)");
+
 #### Geral
 
 * [Repositório do GitHub](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs "Repositório do GitHub");
@@ -197,12 +199,197 @@ A API foi projetada para ser integrada em sistemas hospitalares/clínicos:
 
 ### Estrutura de Arquivos
 ```
-tech-challenge-fase-1/
-├── tech-challenge-fase-1.ipynb    # Notebook principal com EDA, modelagem e avaliação
-├── main.py                         # API FastAPI para predições em tempo real
-├── pipe_lr_model.pkl              # Modelo Logistic Regression treinado (serializado)
-├── requirements.txt                # Dependências do projeto
-└── README.md                       # Este arquivo
+tech-challenge-fase-2/
+├── rm369853-tech-challenge-fase-2.ipynb  # Notebook principal (versão local)
+├── main.py                               # API FastAPI para predições em tempo real
+├── requirements.txt                      # Dependências do projeto
+├── README.md                             # Este arquivo
+└── infra/                                # Implementação em nuvem (AWS SageMaker)
+    ├── bootstrap.sh                      # Setup inicial: limpa jobs e executa terraform apply
+    ├── destroy.sh                        # Teardown completo da infraestrutura
+    ├── main.tf                           # Locals e data sources
+    ├── iam.tf                            # IAM Role e políticas do SageMaker
+    ├── s3.tf                             # Bucket S3 (dados, modelos, scripts)
+    ├── sagemaker_notebook.tf             # Notebook Instance + Lifecycle Configuration
+    ├── sagemaker_endpoint.tf             # Documentação do endpoint (criado via SDK)
+    ├── variables.tf                      # Variáveis configuráveis (instâncias, HPO, GA, Autopilot)
+    ├── terraform.tfvars                  # Valores padrão para o ambiente dev
+    ├── outputs.tf                        # Outputs (bucket, role ARN, notebook URL)
+    ├── providers.tf / versions.tf        # Provider AWS e versões do Terraform
+    └── scripts/
+        ├── on_create.sh                  # Lifecycle: instala dependências no notebook
+        ├── on_start.sh                   # Lifecycle: dispara pipeline de treinamento
+        ├── train_and_deploy.py           # Orquestrador (8 fases do pipeline)
+        ├── train.py                      # Script de treinamento (executado pelo SageMaker)
+        ├── requirements.txt              # Dependências do ambiente SageMaker
+        └── inference_src/
+            └── inference.py              # Script de inferência do endpoint
+```
+
+---
+
+## Implementação em Nuvem — AWS SageMaker (Entrega EXTRA)
+
+Esta seção documenta a implementação completa do pipeline de treinamento e deploy em nuvem utilizando **AWS SageMaker**, provisionada via **Terraform** (Infrastructure as Code).
+
+### Arquitetura da Solução
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        AWS Cloud (sa-east-1)                            │
+│                                                                         │
+│  ┌──────────────┐     ┌─────────────────────────────────────────────┐  │
+│  │   Terraform   │────▶│  S3 Bucket (dados, modelos, scripts)       │  │
+│  │  (bootstrap)  │     │  ├── data/raw/nhanes/*.parquet  (cache)    │  │
+│  └──────┬───────┘     │  ├── data/nhanes_stroke_processed.csv      │  │
+│         │              │  ├── models/ (artefatos .tar.gz)            │  │
+│         ▼              │  ├── scripts/ (train_and_deploy.py, ...)    │  │
+│  ┌──────────────┐     │  ├── feature-store/                         │  │
+│  │  SageMaker    │     │  └── output/training_metrics.json           │  │
+│  │  Notebook     │     └─────────────────────────────────────────────┘  │
+│  │  (ml.m5.xlarge)│                                                     │
+│  │              │     ┌─────────────────────────────────────────────┐  │
+│  │  on_start.sh │────▶│  train_and_deploy.py (Orquestrador)        │  │
+│  └──────────────┘     │                                             │  │
+│                        │  FASE 1: Setup (Role, Session, Experiment)  │  │
+│                        │  FASE 2: Ingestão NHANES + Pré-processamento│  │
+│                        │  FASE 3: Feature Store (ingestão offline)   │  │
+│                        │  FASE 4: Autopilot AutoML (assíncrono)      │  │
+│                        │  FASE 5: SageMaker Pipelines (HPO → GA)     │  │
+│                        │  FASE 6: Aguardar Autopilot + Comparação    │  │
+│                        │  FASE 7: Salvar métricas no S3              │  │
+│                        │  FASE 8: Deploy dos endpoints               │  │
+│                        └─────────────┬───────────────────────────────┘  │
+│                                      ▼                                  │
+│         ┌────────────────────────────────────────────────┐             │
+│         │            SageMaker Services                   │             │
+│         │                                                │             │
+│         │  ┌──────────┐  ┌──────────┐  ┌──────────────┐ │             │
+│         │  │Experiments│  │ Feature  │  │  Pipelines   │ │             │
+│         │  │ (tracking)│  │  Store   │  │ (HPO → GA)   │ │             │
+│         │  └──────────┘  └──────────┘  └──────────────┘ │             │
+│         │                                                │             │
+│         │  ┌──────────┐  ┌──────────┐  ┌──────────────┐ │             │
+│         │  │ Autopilot│  │   HPO    │  │  Training    │ │             │
+│         │  │ (AutoML) │  │ (Tuning) │  │  Job (GA)    │ │             │
+│         │  └──────────┘  └──────────┘  └──────────────┘ │             │
+│         │                                                │             │
+│         │  ┌─────────────────────────────────────────┐   │             │
+│         │  │  Endpoint de Inferência (ml.t3.medium)  │   │             │
+│         │  │  POST /invocations → JSON (predição)    │   │             │
+│         │  └─────────────────────────────────────────┘   │             │
+│         └────────────────────────────────────────────────┘             │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Fases do Pipeline (Log de Execução)
+
+O orquestrador (`train_and_deploy.py`) executa **8 fases sequenciais**, cada uma com log de início, duração e conclusão:
+
+| Fase | Nome | O que faz | Tempo estimado |
+|------|------|-----------|----------------|
+| **1/8** | Setup | Obtém IAM Role, cria SageMaker Session e Experiment para rastreamento | ~1s |
+| **2/8** | Ingestão NHANES | Baixa 7 ciclos (2005-2018) de 8 módulos do CDC. Armazena em cache no S3 como Parquet — na 2ª execução, lê direto do cache. Pré-processa (binarização, renomeação, merge por SEQN). Dataset final: ~39k linhas, 11 colunas | ~20s (cache) / ~2min (1ª vez) |
+| **3/8** | Feature Store | Cria ou reutiliza um Feature Group offline no SageMaker Feature Store. Ingere os registros pré-processados para auditoria e reutilização | ~2min |
+| **4/8** | Autopilot (lançamento) | Lança um job SageMaker Autopilot (AutoML) de forma **assíncrona** — roda em paralelo com as fases 5. Testa múltiplos algoritmos automaticamente | ~1s (lançamento) |
+| **5/8** | Pipelines (HPO + GA) | Cria e executa um **SageMaker Pipeline** com 2 steps: (1) **HPO Tuning** — otimização Bayesiana de hiperparâmetros do RandomForest; (2) **GA Training** — Algoritmo Genético com warm start dos top-5 do HPO. Usa Managed Spot Instances | ~10-25min |
+| **6/8** | Autopilot (espera) | Aguarda conclusão do Autopilot e compara métricas (F1) com o modelo GA. Em modo dev, aplica timeout configurável | ~5-30min |
+| **7/8** | Métricas | Salva `training_metrics.json` consolidado no S3 (GA params, Autopilot F1, warm start config, etc.) e loga no SageMaker Experiments | ~1s |
+| **8/8** | Deploy | Faz deploy do melhor modelo como SageMaker Endpoint com `inference.py` customizado. Aceita JSON e CSV. Se Autopilot venceu, deploya endpoint separado para comparação | ~5-10min |
+
+### Modo Desenvolvimento (`--dev`)
+
+Para validação rápida, o flag `--dev` reduz drasticamente todos os parâmetros:
+
+| Parâmetro | Modo Normal | Modo Dev |
+|-----------|-------------|----------|
+| HPO jobs | 6 (3 paralelos) | 3 (3 paralelos) |
+| GA população / gerações | 10 / 5 | 4 / 3 |
+| Autopilot candidatos | 5 | 3 + timeout 20min |
+| max-run por job | 1800s (30min) | 600s (10min) |
+| Tempo total estimado | ~30-50min | ~15-25min |
+
+O modo dev é ativado via Terraform (`dev_mode = true` em `terraform.tfvars`) e passado automaticamente ao script pelo lifecycle `on_start.sh`.
+
+### Diferenças: Notebook Local vs. Cloud (SageMaker)
+
+| Aspecto | Notebook Local | Cloud (SageMaker) |
+|---------|---------------|-------------------|
+| **Execução** | Manual — rodar células uma a uma | Automático — `on_start.sh` dispara pipeline ao iniciar notebook |
+| **Dados** | Baixa NHANES toda vez via `pd.read_sas()` | Cache em S3 como Parquet — 2ª execução é instantânea |
+| **Feature Store** | Não tem | SageMaker Feature Store offline (Glue + S3) |
+| **HPO** | `GASearchCV` (sklearn-genetic-opt) local | SageMaker HPO Tuning Job (Bayesiano, instâncias dedicadas) |
+| **Algoritmo Genético** | 3 experimentos locais (LR + RF) | GA from scratch dentro de Training Job com warm start do HPO |
+| **AutoML** | Não tem | SageMaker Autopilot (compara automaticamente com GA) |
+| **Treinamento** | CPU local | Managed Spot Instances (ml.m5.large) — custo ~70% menor |
+| **Pipelines** | Não tem | SageMaker Pipelines (HPO → GA sequencial, gerenciado) |
+| **Experiments** | Não tem | SageMaker Experiments (tracking de métricas, parâmetros, artefatos) |
+| **Deploy** | FastAPI local (`main.py`) | SageMaker Endpoint (ml.t3.medium) com `inference.py` |
+| **Infraestrutura** | Manual | Terraform (IaC) — `bootstrap.sh` / `destroy.sh` |
+| **Modelos** | LR + RF (6 experimentos GA) | RF baseline + RF GA otimizado + Autopilot (comparação) |
+| **Scorer** | F-beta (β=1.5) com penalidade | F-beta (β=1.5) via cross_val_score |
+
+### Serviços AWS Utilizados
+
+| Serviço | Finalidade |
+|---------|-----------|
+| **SageMaker Notebook Instance** | Ambiente de execução do orquestrador |
+| **SageMaker Training Jobs** | Treinamento distribuído com Managed Spot |
+| **SageMaker HPO Tuning** | Otimização Bayesiana de hiperparâmetros |
+| **SageMaker Autopilot** | AutoML — compara automaticamente com o modelo manual |
+| **SageMaker Pipelines** | Orquestração gerenciada (HPO → GA) |
+| **SageMaker Experiments** | Rastreamento de métricas e parâmetros |
+| **SageMaker Feature Store** | Persistência offline de features (auditoria) |
+| **SageMaker Endpoint** | Inferência em tempo real via HTTPS |
+| **S3** | Armazenamento de dados, modelos, scripts e métricas |
+| **IAM** | Role e políticas de acesso (least privilege) |
+| **CloudWatch** | Logs e métricas de monitoramento |
+| **Glue** | Catálogo de dados para Feature Store offline |
+
+### Como Executar (Cloud)
+
+#### Pré-requisitos
+- AWS CLI configurado com credenciais válidas
+- Terraform >= 1.5.0
+- Conta AWS com permissões para SageMaker, S3, IAM, Glue
+
+#### Deploy
+
+```bash
+cd infra/
+
+# 1. Criar infraestrutura e disparar pipeline
+bash bootstrap.sh
+
+# O bootstrap.sh:
+#   - Para jobs SageMaker em andamento (evita conflitos de quota)
+#   - Executa terraform apply (cria S3, Notebook, IAM, uploads scripts)
+#   - O Notebook inicia automaticamente e dispara o pipeline via on_start.sh
+```
+
+#### Acompanhar execução
+
+```bash
+# Via SageMaker Console → Notebook Instances → Open JupyterLab → Terminal:
+tail -f /home/ec2-user/SageMaker/train_and_deploy.log
+```
+
+#### Teardown
+
+```bash
+cd infra/
+bash destroy.sh   # terraform destroy — remove todos os recursos
+```
+
+#### Configuração
+
+Edite `terraform.tfvars` para ajustar parâmetros:
+
+```hcl
+aws_region             = "sa-east-1"
+training_instance_type = "ml.m5.large"
+dev_mode               = true     # Modo rápido para testes
+skip_deploy            = false    # true para pular deploy dos endpoints
 ```
 
 ---

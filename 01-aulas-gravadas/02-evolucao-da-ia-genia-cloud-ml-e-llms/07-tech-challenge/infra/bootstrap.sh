@@ -4,8 +4,8 @@
 #
 # Uso:
 #   cd infra/
-#   bash bootstrap.sh          # zera recursos + terraform apply
-#   bash bootstrap.sh --only-cleanup   # só zera, sem apply
+#   bash bootstrap.sh > bootstrap.log                 # zera recursos + terraform apply
+#   bash bootstrap.sh --only-cleanup> bootstrap.log   # só zera, sem apply
 # ==============================================================================
 set -euo pipefail
 

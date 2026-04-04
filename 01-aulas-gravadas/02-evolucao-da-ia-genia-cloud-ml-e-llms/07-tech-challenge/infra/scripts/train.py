@@ -24,6 +24,10 @@ import logging
 import os
 import sys
 from copy import deepcopy
+from datetime import datetime, timezone, timedelta
+
+# Fuso horário de São Paulo (UTC-3)
+BRT = timezone(timedelta(hours=-3))
 
 import joblib
 import numpy as np
@@ -52,8 +56,10 @@ except ImportError:
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[logging.StreamHandler(sys.stdout)],
 )
+logging.Formatter.converter = lambda *args: datetime.now(BRT).timetuple()
 logger = logging.getLogger(__name__)
 
 # ==============================================================================
@@ -300,8 +306,8 @@ if __name__ == "__main__":
     parser.add_argument("--mode", type=str, default="full", choices=["full", "hpo"])
 
     # Hiperparâmetros do GA (modo full)
-    parser.add_argument("--ga-pop", type=int, default=20)
-    parser.add_argument("--ga-gen", type=int, default=10)
+    parser.add_argument("--ga-pop", type=int, default=10)
+    parser.add_argument("--ga-gen", type=int, default=5)
 
     # Hiperparâmetros do RF (modo hpo — variados pelo SageMaker HPO Tuner)
     parser.add_argument("--n-estimators", type=int, default=100)

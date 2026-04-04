@@ -4,7 +4,7 @@
 #
 # Uso:
 #   cd infra/
-#   bash destroy.sh          # terraform destroy
+#   bash destroy.sh > destroy.log   # terraform destroy
 # ==============================================================================
 
 terraform destroy -auto-approve

@@ -28,7 +28,10 @@ import sys
 import tempfile
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# Fuso horário de São Paulo (UTC-3)
+BRT = timezone(timedelta(hours=-3))
 
 import boto3
 import numpy as np
@@ -51,8 +54,10 @@ from sagemaker.workflow.steps import TrainingStep, TuningStep
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[logging.StreamHandler(sys.stdout)],
 )
+logging.Formatter.converter = lambda *args: datetime.now(BRT).timetuple()
 logger = logging.getLogger(__name__)
 
 # Diretório temporário com apenas train.py (sem requirements.txt pesado)
@@ -334,7 +339,7 @@ def ingest_features(df, feature_group, session):
     # Adicionar colunas obrigatórias
     df_fs = df.copy()
     df_fs["record_id"] = [str(uuid.uuid4()) for _ in range(len(df_fs))]
-    df_fs["event_time"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    df_fs["event_time"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # Converter tipos para compatibilidade com Feature Store
     int_cols = [
@@ -408,7 +413,7 @@ def run_autopilot_job(data_s3_uri, bucket, region, project, role_arn, session,
     """
     logger.info("Lançando SageMaker Autopilot (AutoML)...")
 
-    timestamp = datetime.now().strftime("%m%d%H%M%S")
+    timestamp = datetime.now(BRT).strftime("%m%d%H%M%S")
     # AutoML job name: max 32 chars, pattern [a-zA-Z0-9](-*[a-zA-Z0-9]){0,31}
     job_name = f"avc-ap-{timestamp}"
 
@@ -454,22 +459,37 @@ def run_autopilot_job(data_s3_uri, bucket, region, project, role_arn, session,
     return auto_ml, job_name
 
 
-def wait_for_autopilot(auto_ml, job_name, session):
-    """Aguarda a conclusão do Autopilot e retorna os resultados."""
+def wait_for_autopilot(auto_ml, job_name, session, timeout_minutes=0):
+    """Aguarda a conclusão do Autopilot e retorna os resultados.
+
+    Se timeout_minutes > 0, desiste após esse tempo e retorna None.
+    """
     logger.info(f"Aguardando conclusão do Autopilot job: {job_name}...")
+    if timeout_minutes > 0:
+        logger.info(f"  Timeout configurado: {timeout_minutes} minutos")
 
     sm_client = session.sagemaker_client
+    start_wait = time.time()
 
     while True:
         response = sm_client.describe_auto_ml_job(AutoMLJobName=job_name)
         status = response["AutoMLJobStatus"]
         secondary = response.get("AutoMLJobSecondaryStatus", "")
-        logger.info(f"  Autopilot status: {status} ({secondary})")
+        elapsed_min = (time.time() - start_wait) / 60
+        logger.info(f"  Autopilot status: {status} ({secondary}) [{elapsed_min:.0f}min]")
 
         if status == "Completed":
             break
         elif status in ("Failed", "Stopped"):
             logger.warning(f"Autopilot job {status}: {response.get('FailureReason', 'N/A')}")
+            return None
+
+        # Timeout — seguir sem Autopilot
+        if timeout_minutes > 0 and elapsed_min >= timeout_minutes:
+            logger.warning(
+                f"Autopilot timeout atingido ({timeout_minutes}min). "
+                f"Status atual: {status} ({secondary}). Continuando sem resultado do Autopilot."
+            )
             return None
 
         time.sleep(60)
@@ -631,7 +651,7 @@ def run_training_job(
 
     # SageMaker Experiments — associar Run ao Training Job
     if experiment_name:
-        run_name = f"ga-training-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        run_name = f"ga-training-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}"
         with Run(
             experiment_name=experiment_name,
             run_name=run_name,
@@ -851,7 +871,7 @@ _phase_start_time: dict = {}
 def _phase(n: int, label: str, end: bool = False) -> None:
     """Loga um banner de início ou fim de fase com timestamp e contador."""
     bar = "─" * 56
-    ts = datetime.now().strftime("%H:%M:%S")
+    ts = datetime.now(BRT).strftime("%H:%M:%S")
     if end:
         elapsed = ""
         if n in _phase_start_time:
@@ -884,8 +904,8 @@ def main():
         default=True,
         help="Usar SageMaker Pipelines (padrão: ativado). Use --no-use-pipeline para modo manual.",
     )
-    parser.add_argument("--ga-pop", type=int, default=20, help="Tamanho da população do GA")
-    parser.add_argument("--ga-gen", type=int, default=10, help="Número de gerações do GA")
+    parser.add_argument("--ga-pop", type=int, default=10, help="Tamanho da população do GA")
+    parser.add_argument("--ga-gen", type=int, default=5, help="Número de gerações do GA")
     parser.add_argument(
         "--training-instance-type", type=str, default="ml.m5.large",
         help="Tipo de instância para Training Jobs"
@@ -895,48 +915,51 @@ def main():
         help="Tipo de instância para Endpoints de inferência"
     )
     parser.add_argument(
-        "--max-run", type=int, default=7200,
+        "--max-run", type=int, default=1800,
         help="Tempo máximo de execução por Training Job (segundos)"
     )
     parser.add_argument(
-        "--max-spot-wait", type=int, default=10800,
+        "--max-spot-wait", type=int, default=3600,
         help="Tempo máximo de espera por instância spot (segundos, >= max-run)"
     )
     parser.add_argument(
-        "--hpo-max-jobs", type=int, default=20,
+        "--hpo-max-jobs", type=int, default=6,
         help="Número máximo de jobs no HPO Tuning"
     )
     parser.add_argument(
-        "--hpo-max-parallel-jobs", type=int, default=4,
+        "--hpo-max-parallel-jobs", type=int, default=3,
         help="Número máximo de jobs paralelos no HPO Tuning"
     )
     parser.add_argument(
-        "--autopilot-max-candidates", type=int, default=20,
+        "--autopilot-max-candidates", type=int, default=5,
         help="Número máximo de modelos candidatos do Autopilot"
+    )
+    parser.add_argument(
+        "--autopilot-timeout", type=int, default=0,
+        help="Timeout em minutos para aguardar Autopilot (0=sem limite)"
     )
     parser.add_argument(
         "--dev",
         action="store_true",
         help=(
-            "Modo desenvolvimento: reduz drasticamente HPO jobs, GA pop/gen e "
-            "candidatos Autopilot para validação rápida. "
-            "Equivale a: --hpo-max-jobs 3 --hpo-max-parallel-jobs 2 "
-            "--ga-pop 4 --ga-gen 3 --autopilot-max-candidates 3 "
-            "--skip-autopilot --max-run 600 --max-spot-wait 900"
+            "Modo desenvolvimento: cada fase ≤25min. "
+            "Equivale a: --hpo-max-jobs 3 --hpo-max-parallel-jobs 3 "
+            "--ga-pop 4 --ga-gen 3 --autopilot-max-candidates 5 "
+            "--autopilot-timeout 25 --max-run 900 --max-spot-wait 1200"
         ),
     )
     args = parser.parse_args()
 
     # Aplicar overrides do modo --dev antes de qualquer uso dos args
     if args.dev:
-        args.hpo_max_jobs = 1          # 1 job HPO — mínimo para validar o fluxo
-        args.hpo_max_parallel_jobs = 1
-        args.ga_pop = 2               # GA só precisa rodar, não convergir
-        args.ga_gen = 2
+        args.hpo_max_jobs = 3          # 3 jobs HPO — 1 batch paralelo ~5min
+        args.hpo_max_parallel_jobs = 3
+        args.ga_pop = 4               # GA leve: 4*3*3cv = 36 fits (~3min)
+        args.ga_gen = 3
         args.autopilot_max_candidates = 3
-        args.skip_autopilot = True    # Autopilot demora >30min só no bootstrap
-        args.max_run = 300            # 5 min por job
-        args.max_spot_wait = 600      # 10 min de espera spot
+        args.autopilot_timeout = 20        # máx 20min, depois segue sem ele
+        args.max_run = 600            # 10 min por job
+        args.max_spot_wait = 900      # 15 min de espera spot
 
     bar = "═" * 58
     logger.info(f"╔{bar}╗")
@@ -946,7 +969,7 @@ def main():
     if args.dev:
         logger.info("║  *** MODO DEV — parâmetros reduzidos para validação ***  ║")
     logger.info(f"╚{bar}╝")
-    logger.info(f"  Início: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"  Início: {datetime.now(BRT).strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info(f"  Bucket: {args.bucket} | Região: {args.region} | Projeto: {args.project}")
     logger.info(f"  Modo: {'Pipeline' if args.use_pipeline else 'Manual'} | "
                 f"Autopilot: {'sim' if not args.skip_autopilot else 'não'} | "
@@ -956,7 +979,8 @@ def main():
         logger.info(
             f"  [DEV] HPO jobs={args.hpo_max_jobs} parallel={args.hpo_max_parallel_jobs} | "
             f"GA pop={args.ga_pop} gen={args.ga_gen} | "
-            f"max-run={args.max_run}s"
+            f"max-run={args.max_run}s | "
+            f"autopilot-timeout={args.autopilot_timeout}min"
         )
 
     # ================================================================
@@ -968,8 +992,14 @@ def main():
     role_arn = iam.get_role(RoleName=role_name)["Role"]["Arn"]
     logger.info(f"Usando role: {role_arn}")
 
-    session = sagemaker.Session(boto_session=boto3.Session(region_name=args.region))
-    pipeline_session = PipelineSession(boto_session=boto3.Session(region_name=args.region))
+    session = sagemaker.Session(
+        boto_session=boto3.Session(region_name=args.region),
+        default_bucket=args.bucket,
+    )
+    pipeline_session = PipelineSession(
+        boto_session=boto3.Session(region_name=args.region),
+        default_bucket=args.bucket,
+    )
 
     # Criar Experiment para rastrear todos os jobs
     experiment_name = create_experiment(session, args.project)
@@ -1006,7 +1036,7 @@ def main():
     _phase(2, "", end=True)
     with Run(
         experiment_name=experiment_name,
-        run_name=f"data-prep-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+        run_name=f"data-prep-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}",
         sagemaker_session=session,
     ) as run:
         run.log_parameter("dataset_rows", df.shape[0])
@@ -1067,7 +1097,7 @@ def main():
         # Criar/atualizar e executar o Pipeline
         pipeline.upsert(role_arn=role_arn)
         execution = pipeline.start(
-            execution_display_name=f"exec-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            execution_display_name=f"exec-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}",
             # Passando parâmetros explicitamente garante que dev mode seja respeitado
             # independente da definição em cache no SageMaker
             parameters={
@@ -1207,7 +1237,7 @@ def main():
         # Logar HPO results no Experiment
         with Run(
             experiment_name=experiment_name,
-            run_name=f"hpo-results-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            run_name=f"hpo-results-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}",
             sagemaker_session=session,
         ) as run:
             run.log_parameter("hpo_tuning_job", tuner.latest_tuning_job.name)
@@ -1240,12 +1270,15 @@ def main():
     _phase(6, "Aguardar Autopilot e comparar resultados")
     autopilot_results = None
     if auto_ml and autopilot_job:
-        autopilot_results = wait_for_autopilot(auto_ml, autopilot_job, session)
+        autopilot_results = wait_for_autopilot(
+            auto_ml, autopilot_job, session,
+            timeout_minutes=getattr(args, 'autopilot_timeout', 0)
+        )
 
     # Logar comparação no Experiment
     with Run(
         experiment_name=experiment_name,
-        run_name=f"comparison-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+        run_name=f"comparison-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}",
         sagemaker_session=session,
     ) as run:
         run.log_parameter("ga_training_job", estimator.latest_training_job.name)
@@ -1281,7 +1314,7 @@ def main():
         "hpo_warm_start_params": warm_start_params,
         "autopilot_job": autopilot_job,
         "autopilot_results": autopilot_results,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(BRT).isoformat(),
     }
     s3 = boto3.client("s3", region_name=args.region)
     s3.put_object(
@@ -1318,7 +1351,7 @@ def main():
     bar = "═" * 58
     logger.info(f"╔{bar}╗")
     logger.info("║  ✓ Pipeline concluído com sucesso!                      ║")
-    logger.info(f"║  Fim: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}                               ║")
+    logger.info(f"║  Fim: {datetime.now(BRT).strftime('%Y-%m-%d %H:%M:%S')}                               ║")
     logger.info(f"╚{bar}╝")
 
 

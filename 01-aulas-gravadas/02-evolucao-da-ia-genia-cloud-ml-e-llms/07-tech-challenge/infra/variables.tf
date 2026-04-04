@@ -45,13 +45,13 @@ variable "training_instance_type" {
 variable "training_max_run_seconds" {
   description = "Tempo máximo de execução do Training Job em segundos (Managed Spot)"
   type        = number
-  default     = 7200
+  default     = 1800
 }
 
 variable "training_max_spot_wait_seconds" {
   description = "Tempo máximo de espera por instância spot em segundos (deve ser >= training_max_run_seconds)"
   type        = number
-  default     = 10800
+  default     = 3600
 }
 
 variable "endpoint_instance_type" {
@@ -73,13 +73,13 @@ variable "endpoint_initial_instance_count" {
 variable "hpo_max_jobs" {
   description = "Número máximo de jobs no Hyperparameter Tuning"
   type        = number
-  default     = 20
+  default     = 3
 }
 
 variable "hpo_max_parallel_jobs" {
   description = "Número máximo de jobs paralelos no Hyperparameter Tuning"
   type        = number
-  default     = 4
+  default     = 3
 }
 
 # ==============================================================================
@@ -89,7 +89,7 @@ variable "hpo_max_parallel_jobs" {
 variable "autopilot_max_candidates" {
   description = "Número máximo de modelos candidatos no Autopilot AutoML"
   type        = number
-  default     = 20
+  default     = 3
 }
 
 # ==============================================================================
