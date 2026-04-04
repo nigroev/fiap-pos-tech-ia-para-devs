@@ -5,6 +5,8 @@ deployment.py — Deploy e gestão de endpoints SageMaker.
 import os
 import time
 
+from sagemaker.sklearn.model import SKLearnModel
+
 from .config import logger
 
 
@@ -74,12 +76,24 @@ def deploy_sagemaker_endpoint(estimator, project, endpoint_instance_type, max_re
         logger.info(f"Criando endpoint '{endpoint_name}' (tentativa {attempt}/{max_retries}, instance: {endpoint_instance_type})...")
         logger.info(f"Model data: {estimator.model_data}")
 
-        estimator.deploy(
+        # Criar SKLearnModel explícito a partir do artefato S3.
+        # Usar estimator.deploy() diretamente falha quando o estimator não tem
+        # um training job "anexado" na sessão local (ex: após SageMaker Pipeline),
+        # pois o SDK gera um nome de model com timestamp do momento do deploy,
+        # que não existe registrado no SageMaker.
+        model = SKLearnModel(
+            model_data=estimator.model_data,
+            role=estimator.role,
+            entry_point="inference.py",
+            source_dir=inference_src,
+            framework_version="1.2-1",
+            py_version="py3",
+            sagemaker_session=estimator.sagemaker_session,
+        )
+        model.deploy(
             initial_instance_count=1,
             instance_type=endpoint_instance_type,
             endpoint_name=endpoint_name,
-            entry_point="inference.py",
-            source_dir=inference_src,
             wait=False,
         )
 

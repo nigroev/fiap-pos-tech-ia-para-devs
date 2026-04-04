@@ -98,6 +98,10 @@ def main():
     parser.add_argument("--skip-autopilot", action="store_true", help="Pular Autopilot AutoML")
     parser.add_argument("--skip-feature-store", action="store_true", help="Pular Feature Store")
     parser.add_argument(
+        "--model-data", type=str, default=None,
+        help="URI S3 do artefato model.tar.gz. Quando fornecido, pula fases 2-7 e executa apenas o deploy.",
+    )
+    parser.add_argument(
         "--use-pipeline",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -178,6 +182,34 @@ def main():
     # Criar Experiment para rastrear todos os jobs
     experiment_name = create_experiment(session, args.project)
     _phase(1, "", end=True)
+
+    # ================================================================
+    # Deploy-only: pula fases 2-7 quando --model-data é fornecido
+    # ================================================================
+    if args.model_data:
+        logger.info(f"Modo deploy-only ativado. Artefato: {args.model_data}")
+        if not args.skip_deploy:
+            from sagemaker.sklearn.estimator import SKLearn
+            # Criar estimator mínimo apenas para carregar a sessão e role
+            stub_estimator = SKLearn(
+                entry_point="train.py",
+                role=role_arn,
+                instance_type=args.training_instance_type,
+                framework_version="1.2-1",
+                py_version="py3",
+                sagemaker_session=session,
+            )
+            # Sobrescrever model_data com o URI fornecido
+            stub_estimator.model_data = args.model_data
+            _phase(8, "Deploy dos endpoints de inferência")
+            endpoint_name = deploy_sagemaker_endpoint(
+                stub_estimator, args.project, args.endpoint_instance_type
+            )
+            logger.info(f"Endpoint GA ativo: {endpoint_name}")
+            _phase(8, "", end=True)
+        else:
+            logger.info("Deploy ignorado (--skip-deploy).")
+        return
 
     # ================================================================
     # 2. Carregar e pré-processar dados
