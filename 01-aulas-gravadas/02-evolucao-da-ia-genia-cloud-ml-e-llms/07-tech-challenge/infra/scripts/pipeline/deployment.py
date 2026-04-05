@@ -55,12 +55,16 @@ def _wait_for_endpoint(sm_client, endpoint_name, timeout=900, poll_interval=30):
     return False
 
 
-def deploy_sagemaker_endpoint(estimator, project, endpoint_instance_type, max_retries=2):
+def deploy_sagemaker_endpoint(estimator, project, endpoint_instance_type, role_arn=None, max_retries=2):
     """Faz deploy do modelo treinado (GA) como endpoint de inferência com retry."""
     logger.info("Fazendo deploy do endpoint no SageMaker...")
 
     endpoint_name = f"{project}-endpoint"
     sm_client = estimator.sagemaker_session.sagemaker_client
+
+    # estimator.role pode ser None quando o estimator vem de SKLearn.attach() após
+    # um SageMaker Pipeline — usar role_arn explícito como fallback.
+    effective_role = role_arn or estimator.role
 
     # Verificar que inference_src existe
     # inference_src está em scripts/ (mesmo nível do diretório pipeline/)
@@ -83,7 +87,7 @@ def deploy_sagemaker_endpoint(estimator, project, endpoint_instance_type, max_re
         # que não existe registrado no SageMaker.
         model = SKLearnModel(
             model_data=estimator.model_data,
-            role=estimator.role,
+            role=effective_role,
             entry_point="inference.py",
             source_dir=inference_src,
             framework_version="1.2-1",

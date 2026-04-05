@@ -203,7 +203,7 @@ def main():
             stub_estimator.model_data = args.model_data
             _phase(8, "Deploy dos endpoints de inferência")
             endpoint_name = deploy_sagemaker_endpoint(
-                stub_estimator, args.project, args.endpoint_instance_type
+                stub_estimator, args.project, args.endpoint_instance_type, role_arn=role_arn
             )
             logger.info(f"Endpoint GA ativo: {endpoint_name}")
             _phase(8, "", end=True)
@@ -530,7 +530,7 @@ def main():
     if not args.skip_deploy:
         # Deploy do modelo GA (endpoint principal com inference.py customizado)
         endpoint_name = deploy_sagemaker_endpoint(
-            estimator, args.project, args.endpoint_instance_type
+            estimator, args.project, args.endpoint_instance_type, role_arn=role_arn
         )
         logger.info(f"Endpoint GA ativo: {endpoint_name}")
 
