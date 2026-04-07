@@ -214,7 +214,7 @@ tech-challenge-fase-2/
     ├── iam.tf                            # IAM Role e políticas do SageMaker
     ├── s3.tf                             # Bucket S3 (dados, modelos, scripts)
     ├── sagemaker_notebook.tf             # Notebook Instance + Lifecycle Configuration
-    ├── sagemaker_endpoint.tf             # Documentação do endpoint (criado via SDK)
+
     ├── variables.tf                      # Variáveis configuráveis (instâncias, HPO, GA, Autopilot)
     ├── terraform.tfvars                  # Valores padrão para o ambiente dev
     ├── outputs.tf                        # Outputs (bucket, role ARN, notebook URL)
@@ -299,16 +299,16 @@ Esta seção documenta a implementação completa do pipeline de treinamento e d
 
 O orquestrador (`train_and_deploy.py`) executa **8 fases sequenciais**, cada uma com log de início, duração e conclusão:
 
-| Fase | Nome | O que faz | Tempo estimado |
-|------|------|-----------|----------------|
-| **1/8** | Setup | Obtém IAM Role, cria SageMaker Session e Experiment para rastreamento | ~1s |
-| **2/8** | Ingestão NHANES | Baixa 7 ciclos (2005-2018) de 8 módulos do CDC. Armazena em cache no S3 como Parquet — na 2ª execução, lê direto do cache. Pré-processa (binarização, renomeação, merge por SEQN). Dataset final: ~39k linhas, 11 colunas | ~20s (cache) / ~2min (1ª vez) |
-| **3/8** | Feature Store | Cria ou reutiliza um Feature Group offline no SageMaker Feature Store. Ingere os registros pré-processados para auditoria e reutilização | ~2min |
-| **4/8** | Autopilot (lançamento) | Lança um job SageMaker Autopilot (AutoML) de forma **assíncrona** — roda em paralelo com as fases 5. Testa múltiplos algoritmos automaticamente | ~1s (lançamento) |
-| **5/8** | Pipelines (HPO + GA) | Cria e executa um **SageMaker Pipeline** com 2 steps: (1) **HPO Tuning** — otimização Bayesiana de hiperparâmetros do RandomForest; (2) **GA Training** — Algoritmo Genético com warm start dos top-5 do HPO. Usa Managed Spot Instances | ~10-25min |
-| **6/8** | Autopilot (espera) | Aguarda conclusão do Autopilot e compara métricas (F1) com o modelo GA. Em modo dev, aplica timeout configurável | ~5-30min |
-| **7/8** | Métricas | Salva `training_metrics.json` consolidado no S3 (GA params, Autopilot F1, warm start config, etc.) e loga no SageMaker Experiments | ~1s |
-| **8/8** | Deploy | Faz deploy do melhor modelo como SageMaker Endpoint com `inference.py` customizado. Aceita JSON e CSV. Se Autopilot venceu, deploya endpoint separado para comparação | ~5-10min |
+| Fase | Nome | O que faz | Tempo real (dev_mode) |
+|------|------|-----------|------------------------|
+| **1/8** | Setup | Obtém IAM Role, cria SageMaker Session e Experiment para rastreamento | 1s |
+| **2/8** | Ingestão NHANES | Baixa 7 ciclos (2005-2018) de 8 módulos do CDC. Armazena em cache no S3 como Parquet — na 2ª execução, lê direto do cache. Pré-processa (binarização, renomeação, merge por SEQN). Dataset final: ~39k linhas, 11 colunas | 2m25s |
+| **3/8** | Feature Store | Cria ou reutiliza um Feature Group offline no SageMaker Feature Store. Ingere os registros pré-processados para auditoria e reutilização | 2m02s |
+| **4/8** | Autopilot (lançamento) | Lança um job SageMaker Autopilot (AutoML) de forma **assíncrona** — roda em paralelo com a fase 5. Testa múltiplos algoritmos automaticamente | 1s |
+| **5/8** | Pipelines (HPO + GA) | Cria e executa um **SageMaker Pipeline** com 2 steps: (1) **HPO Tuning** — otimização Bayesiana de hiperparâmetros do RandomForest; (2) **GA Training** — Algoritmo Genético com warm start dos top-5 do HPO. Usa Managed Spot Instances | 7m09s |
+| **6/8** | Autopilot (espera) | Aguarda conclusão do Autopilot e compara métricas (F1) com o modelo GA. Em modo dev, aplica timeout configurável | 14m02s |
+| **7/8** | Métricas | Salva `training_metrics.json` consolidado no S3 (GA params, Autopilot F1, warm start config, etc.) e loga no SageMaker Experiments | <1s |
+| **8/8** | Deploy | Faz deploy do melhor modelo como SageMaker Endpoint com `inference.py` customizado. Aceita JSON e CSV. Se Autopilot venceu, deploya endpoint separado para comparação | 3m32s |
 
 ### Modo Desenvolvimento (`dev_mode = true`)
 
@@ -318,10 +318,10 @@ Quando `dev_mode = true` no `terraform.tfvars`, o Terraform calcula automaticame
 |-----------|-------------|----------|
 | HPO jobs | 20 (4 paralelos) | 3 (3 paralelos) |
 | GA população / gerações | 10 / 5 | 4 / 3 |
-| Autopilot candidatos | 3 | 3 + timeout 20min |
+| Autopilot candidatos | 3 | 3 + timeout 45min |
 | max-run por job | 1800s (30min) | 600s (10min) |
 | max-spot-wait | 3600s (60min) | 900s (15min) |
-| Tempo total estimado | ~30-50min | ~15-25min |
+| Tempo total estimado | ~30-50min | ~27min (medido em 07/04/2026) |
 
 Os overrides são definidos em `main.tf` (`locals`) e injetados no `on_start.sh` via `templatefile`.
 
@@ -402,6 +402,16 @@ bash stop_start_notebook.sh start   # inicia notebook (on_start.sh roda automati
 cd infra/
 bash destroy.sh   # terraform destroy — remove todos os recursos
 ```
+
+### Troubleshooting (Cloud)
+
+Problemas encontrados e resolvidos durante o desenvolvimento da solução cloud:
+
+| Problema | Causa Raíz | Solução |
+|----------|-----------|--------|
+| Training Jobs falham com "ExitCode 1 Erro" sem detalhes | `_main()` chamada antes de ser definida em `train.py` (Python top-to-bottom) | Mover `if __name__ == "__main__"` para o final do arquivo |
+| GA Training falha em `dev_mode` | `tournament_selection(k=5)` com população de 4 → `ValueError` em `np.random.choice` | `k = min(k, len(population))` |
+| Deploy falha com "Could not find model data" | Import duplicado de `SKLearn` dentro de `if` sombreia variável global → `UnboundLocalError` no `attach()` | Remover import duplicado + fallback via `describe_training_job` |
 
 #### Configuração
 

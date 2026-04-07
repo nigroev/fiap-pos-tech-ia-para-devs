@@ -418,7 +418,23 @@ def main():
                     estimator = SKLearn.attach(training_job_name, sagemaker_session=session)
                     logger.info(f"Estimator recuperado do Pipeline: {training_job_name}")
             except Exception as e:
-                logger.warning(f"Não foi possível recuperar estimator do Pipeline: {e}")
+                logger.warning(f"SKLearn.attach falhou: {e}. Tentando fallback via describe_training_job...")
+                try:
+                    ga_step = next(
+                        (s for s in execution.list_steps()
+                         if s.get("Metadata", {}).get("TrainingJob")),
+                        None
+                    )
+                    if ga_step:
+                        training_job_name = ga_step["Metadata"]["TrainingJob"]["Arn"].split("/")[-1]
+                        tj_desc = sm_client.describe_training_job(TrainingJobName=training_job_name)
+                        real_model_data = tj_desc["ModelArtifacts"]["S3ModelArtifacts"]
+                        ga_estimator._current_job_name = training_job_name
+                        ga_estimator.model_data = real_model_data
+                        estimator = ga_estimator
+                        logger.info(f"Fallback: model_data={real_model_data} (job={training_job_name})")
+                except Exception as e2:
+                    logger.warning(f"Fallback também falhou: {e2}")
         elif exec_status in ("Failed", "Stopped"):
             # Tentar recuperar o training job mesmo em caso de falha, para diagnóstico
             try:
