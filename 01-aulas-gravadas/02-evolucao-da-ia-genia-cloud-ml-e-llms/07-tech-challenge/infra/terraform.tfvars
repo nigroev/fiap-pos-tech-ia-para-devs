@@ -17,7 +17,7 @@ ga_generations = 5
 
 # Autopilot
 autopilot_max_candidates  = 3
-autopilot_timeout_minutes = 0 # 0 = sem limite
+autopilot_timeout_minutes = 45
 
 # Training Job timeouts
 training_max_run_seconds       = 1800 # 30min por job

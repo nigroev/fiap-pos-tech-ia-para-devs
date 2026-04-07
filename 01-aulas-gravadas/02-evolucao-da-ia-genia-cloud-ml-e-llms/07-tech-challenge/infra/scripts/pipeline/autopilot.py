@@ -5,19 +5,17 @@ autopilot.py — SageMaker Autopilot (AutoML): lançamento e polling.
 import time
 from datetime import datetime
 
-from sagemaker import AutoML
-
 from .config import BRT, logger
 
 
 def run_autopilot_job(data_s3_uri, bucket, region, project, role_arn, session,
-                      max_candidates=20):
-    """Lança um job SageMaker Autopilot (AutoML) de forma assíncrona.
+                      max_candidates=20, max_runtime_per_job=600,
+                      max_total_runtime=2700):
+    """Lança um job SageMaker Autopilot via boto3 de forma assíncrona.
 
-    O Autopilot executa automaticamente:
-      - Feature engineering
-      - Seleção e tuning de algoritmos
-      - Treinamento e ranking de modelos candidatos
+    Usa Mode=ENSEMBLING para execução mais rápida e eficiente.
+    max_runtime_per_job: segundos máximos por candidato (padrão: 600s = 10min)
+    max_total_runtime:   segundos máximos no total   (padrão: 2700s = 45min)
     """
     logger.info("Lançando SageMaker Autopilot (AutoML)...")
 
@@ -25,25 +23,42 @@ def run_autopilot_job(data_s3_uri, bucket, region, project, role_arn, session,
     # AutoML job name: max 32 chars, pattern [a-zA-Z0-9](-*[a-zA-Z0-9]){0,31}
     job_name = f"avc-ap-{timestamp}"
 
-    auto_ml = AutoML(
-        role=role_arn,
-        sagemaker_session=session,
-        target_attribute_name="MCQ160F_stroke_bin",
-        output_path=f"s3://{bucket}/autopilot-output",
-        problem_type="BinaryClassification",
-        max_candidates=max_candidates,
-        job_objective={"MetricName": "F1"},
-    )
-
-    # Lançar de forma assíncrona (wait=False) para rodar em paralelo com HPO+GA
     sm_client = session.sagemaker_client
     try:
-        auto_ml.fit(
-            inputs=data_s3_uri,
-            job_name=job_name,
-            wait=False,
+        # Usar AutoMLConfig (Autopilot V2) para melhor suporte a buckets e segurança
+        sm_client.create_auto_ml_job(
+            AutoMLJobName=job_name,
+            AutoMLJobConfig={
+                "CompletionCriteria": {
+                    "MaxCandidates": max_candidates,
+                    "MaxRuntimePerTrainingJobInSeconds": max_runtime_per_job,
+                    "MaxAutoMLJobRuntimeInSeconds": max_total_runtime,
+                },
+                "Mode": "ENSEMBLING",
+                "DataSplitConfig": {"ValidationFraction": 0.2},
+                "SecurityConfig": {
+                    "EnableInterContainerTrafficEncryption": False,
+                },
+            },
+            InputDataConfig=[{
+                "DataSource": {
+                    "S3DataSource": {
+                        "S3DataType": "S3Prefix",
+                        "S3Uri": data_s3_uri,
+                    }
+                },
+                "TargetAttributeName": "MCQ160F_stroke_bin",
+            }],
+            OutputDataConfig={
+                "S3OutputPath": f"s3://{bucket}/autopilot-output",
+            },
+            RoleArn=role_arn,
         )
-        logger.info(f"Autopilot job lançado: {job_name} (max_candidates={max_candidates})")
+        logger.info(
+            f"Autopilot job lançado: {job_name} "
+            f"(mode=ENSEMBLING, max_candidates={max_candidates}, "
+            f"max_runtime_per_job={max_runtime_per_job}s, max_total={max_total_runtime}s)"
+        )
     except sm_client.exceptions.ResourceLimitExceeded:
         logger.warning(
             "ResourceLimitExceeded: limite de AutoML jobs concorrentes atingido. "
@@ -64,7 +79,7 @@ def run_autopilot_job(data_s3_uri, bucket, region, project, role_arn, session,
             logger.error("Nenhum AutoML job em andamento encontrado. Pulando Autopilot.")
             return None, None
 
-    return auto_ml, job_name
+    return None, job_name
 
 
 def wait_for_autopilot(auto_ml, job_name, session, timeout_minutes=0):
@@ -102,8 +117,9 @@ def wait_for_autopilot(auto_ml, job_name, session, timeout_minutes=0):
 
         time.sleep(60)
 
-    # Obter o melhor candidato
-    best = auto_ml.best_candidate(job_name=job_name)
+    # Obter o melhor candidato direto do describe (sem precisar do SDK AutoML)
+    response = sm_client.describe_auto_ml_job(AutoMLJobName=job_name)
+    best = response.get("BestCandidate", {})
     best_metric = best.get("FinalAutoMLJobObjectiveMetric", {})
 
     logger.info(f"Autopilot concluído!")

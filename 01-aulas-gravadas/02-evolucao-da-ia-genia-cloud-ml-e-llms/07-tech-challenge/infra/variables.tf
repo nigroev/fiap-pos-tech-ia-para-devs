@@ -111,7 +111,7 @@ variable "autopilot_max_candidates" {
 variable "autopilot_timeout_minutes" {
   description = "Timeout em minutos para aguardar Autopilot (0 = sem limite)"
   type        = number
-  default     = 0
+  default     = 45
 }
 
 # ==============================================================================

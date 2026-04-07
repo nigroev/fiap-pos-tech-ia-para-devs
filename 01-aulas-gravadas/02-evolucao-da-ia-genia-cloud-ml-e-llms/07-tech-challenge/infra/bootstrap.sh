@@ -90,6 +90,41 @@ for PIPELINE in $PIPELINES; do
 done
 [ -z "${PIPELINES}" ] && echo "  Nenhuma pipeline encontrada."
 
+# ── 5. Limpar Experiments (trial components) para evitar ResourceLimitExceeded ─
+echo ""
+echo "▶ Limpando SageMaker Experiments (trials e trial-components)..."
+EXPERIMENT="${PROJECT}-experiment"
+# Listar trials do experiment
+TRIALS=$(aws sagemaker list-trials \
+  --region "${REGION}" \
+  --experiment-name "${EXPERIMENT}" \
+  --query "TrialSummaries[].TrialName" \
+  --output text 2>/dev/null || true)
+for TRIAL in $TRIALS; do
+  # Desassociar todos os trial components do trial
+  TCS=$(aws sagemaker list-trial-components \
+    --region "${REGION}" \
+    --trial-name "${TRIAL}" \
+    --query "TrialComponentSummaries[].TrialComponentName" \
+    --output text 2>/dev/null || true)
+  for TC in $TCS; do
+    echo "  Desassociando ${TC} de ${TRIAL}"
+    aws sagemaker disassociate-trial-component \
+      --trial-name "${TRIAL}" \
+      --trial-component-name "${TC}" \
+      --region "${REGION}" 2>/dev/null || true
+    echo "  Deletando trial component: ${TC}"
+    aws sagemaker delete-trial-component \
+      --trial-component-name "${TC}" \
+      --region "${REGION}" 2>/dev/null || true
+  done
+  echo "  Deletando trial: ${TRIAL}"
+  aws sagemaker delete-trial --trial-name "${TRIAL}" --region "${REGION}" 2>/dev/null || true
+done
+echo "  Deletando experiment: ${EXPERIMENT}"
+aws sagemaker delete-experiment --experiment-name "${EXPERIMENT}" --region "${REGION}" 2>/dev/null || true
+echo "  Experiment cleanup concluído."
+
 echo ""
 echo "✓ Cleanup concluído."
 
@@ -105,6 +140,19 @@ if [ "${ONLY_CLEANUP}" != "--only-cleanup" ]; then
   echo "════════════════════════════════════════════════════"
   echo "  terraform apply"
   echo "════════════════════════════════════════════════════"
+
+  # Remove aws_s3_object entries from state before applying.
+  # When the bucket is destroyed and recreated, Terraform's state refresh tries
+  # to read those objects from the (now empty) bucket and fails with
+  # "couldn't find resource". Removing them from state lets Terraform recreate
+  # them cleanly on the next apply (etag ensures idempotency when unchanged).
+  echo "▶ Resetando estado de objetos S3..."
+  S3_STATE=$(terraform state list 2>/dev/null | grep '^aws_s3_object\.' || true)
+  if [ -n "$S3_STATE" ]; then
+    # xargs passes each resource as a separate argument to a single state rm call
+    echo "$S3_STATE" | xargs terraform state rm 2>/dev/null || true
+  fi
+
   terraform apply -auto-approve
 fi
 

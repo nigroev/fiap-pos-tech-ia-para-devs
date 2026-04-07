@@ -138,7 +138,7 @@ def main():
         help="Número máximo de modelos candidatos do Autopilot"
     )
     parser.add_argument(
-        "--autopilot-timeout", type=int, default=0,
+        "--autopilot-timeout", type=int, default=45,
         help="Timeout em minutos para aguardar Autopilot (0=sem limite)"
     )
     args = parser.parse_args()
@@ -189,7 +189,6 @@ def main():
     if args.model_data:
         logger.info(f"Modo deploy-only ativado. Artefato: {args.model_data}")
         if not args.skip_deploy:
-            from sagemaker.sklearn.estimator import SKLearn
             # Criar estimator mínimo apenas para carregar a sessão e role
             stub_estimator = SKLearn(
                 entry_point="train.py",
@@ -240,15 +239,18 @@ def main():
 
     # Log de dados no Experiment
     _phase(2, "", end=True)
-    with Run(
-        experiment_name=experiment_name,
-        run_name=f"data-prep-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}",
-        sagemaker_session=session,
-    ) as run:
-        run.log_parameter("dataset_rows", df.shape[0])
-        run.log_parameter("dataset_cols", df.shape[1])
-        run.log_parameter("positive_rate", float(df["MCQ160F_stroke_bin"].mean()))
-        run.log_parameter("feature_store_enabled", str(not args.skip_feature_store))
+    try:
+        with Run(
+            experiment_name=experiment_name,
+            run_name=f"data-prep-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}",
+            sagemaker_session=session,
+        ) as run:
+            run.log_parameter("dataset_rows", df.shape[0])
+            run.log_parameter("dataset_cols", df.shape[1])
+            run.log_parameter("positive_rate", float(df["MCQ160F_stroke_bin"].mean()))
+            run.log_parameter("feature_store_enabled", str(not args.skip_feature_store))
+    except Exception as e:
+        logger.warning(f"Experiment logging falhou (não-fatal): {e}")
 
     # ================================================================
     # 4. Lançar Autopilot AutoML (assíncrono — roda em paralelo)
@@ -257,6 +259,7 @@ def main():
     auto_ml = None
     autopilot_job = None
     if not args.skip_autopilot:
+        ap_timeout = args.autopilot_timeout
         result = run_autopilot_job(
             data_s3_uri=data_s3_uri,
             bucket=args.bucket,
@@ -265,6 +268,7 @@ def main():
             role_arn=role_arn,
             session=session,
             max_candidates=args.autopilot_max_candidates,
+            max_total_runtime=ap_timeout * 60 if ap_timeout > 0 else 2700,
         )
         if result is not None and result != (None, None):
             auto_ml, autopilot_job = result
@@ -415,6 +419,60 @@ def main():
                     logger.info(f"Estimator recuperado do Pipeline: {training_job_name}")
             except Exception as e:
                 logger.warning(f"Não foi possível recuperar estimator do Pipeline: {e}")
+        elif exec_status in ("Failed", "Stopped"):
+            # Tentar recuperar o training job mesmo em caso de falha, para diagnóstico
+            try:
+                ga_step = next(
+                    (s for s in execution.list_steps()
+                     if s.get("Metadata", {}).get("TrainingJob")),
+                    None
+                )
+                if ga_step:
+                    training_job_name = ga_step["Metadata"]["TrainingJob"]["Arn"].split("/")[-1]
+                    tj = session.sagemaker_client.describe_training_job(TrainingJobName=training_job_name)
+                    failure_reason = tj.get("FailureReason", "N/A")
+                    logger.error(f"Training job falhou: {training_job_name}")
+                    logger.error(f"  Motivo: {failure_reason}")
+            except Exception:
+                pass
+            # Diagnosticar falha no HPO step
+            try:
+                hpo_step = next(
+                    (s for s in execution.list_steps()
+                     if s.get("Metadata", {}).get("TuningJob")),
+                    None
+                )
+                if hpo_step:
+                    tuning_job_name = hpo_step["Metadata"]["TuningJob"]["Arn"].split("/")[-1]
+                    tj = session.sagemaker_client.describe_hyper_parameter_tuning_job(
+                        HyperParameterTuningJobName=tuning_job_name
+                    )
+                    failure_reason = tj.get("FailureReason", "N/A")
+                    counts = tj.get("TrainingJobStatusCounters", {})
+                    logger.error(f"HPO Tuning job: {tuning_job_name}")
+                    logger.error(f"  Status: {tj.get('HyperParameterTuningJobStatus')}")
+                    logger.error(f"  Jobs: Completed={counts.get('Completed',0)}, "
+                                 f"Failed={counts.get('Failed',0)}, "
+                                 f"Stopped={counts.get('Stopped',0)}")
+                    logger.error(f"  Motivo: {failure_reason}")
+                    # Mostrar motivo do primeiro job com falha
+                    failed_jobs = session.sagemaker_client.list_training_jobs_for_hyper_parameter_tuning_job(
+                        HyperParameterTuningJobName=tuning_job_name,
+                        StatusEquals="Failed",
+                        MaxResults=1,
+                    ).get("TrainingJobSummaries", [])
+                    if failed_jobs:
+                        failed_name = failed_jobs[0]["TrainingJobName"]
+                        failed_tj = session.sagemaker_client.describe_training_job(TrainingJobName=failed_name)
+                        logger.error(f"  Primeiro job falho: {failed_name}")
+                        logger.error(f"    Motivo: {failed_tj.get('FailureReason', 'N/A')}")
+            except Exception as diag_exc:
+                logger.warning(f"Não foi possível diagnosticar falha do HPO: {diag_exc}")
+            logger.error(
+                f"Pipeline terminou com status '{exec_status}'. "
+                "O modelo GA não foi gerado — deploy será ignorado."
+            )
+            estimator = None
         tuner = None
         warm_start_params = None
         _phase(5, "", end=True)
@@ -474,9 +532,9 @@ def main():
     # ================================================================
     _phase(6, "Aguardar Autopilot e comparar resultados")
     autopilot_results = None
-    if auto_ml and autopilot_job:
+    if autopilot_job:
         autopilot_results = wait_for_autopilot(
-            auto_ml, autopilot_job, session,
+            None, autopilot_job, session,
             timeout_minutes=getattr(args, 'autopilot_timeout', 0)
         )
 
@@ -486,8 +544,9 @@ def main():
         run_name=f"comparison-{datetime.now(BRT).strftime('%Y%m%d%H%M%S')}",
         sagemaker_session=session,
     ) as run:
-        run.log_parameter("ga_training_job", estimator.latest_training_job.name)
-        run.log_parameter("ga_model_s3_uri", str(estimator.model_data))
+        if estimator is not None:
+            run.log_parameter("ga_training_job", estimator.latest_training_job.name)
+            run.log_parameter("ga_model_s3_uri", str(estimator.model_data))
         run.log_parameter("pipeline_mode", str(args.use_pipeline))
         if autopilot_results:
             run.log_parameter("autopilot_candidate", autopilot_results["candidate_name"])
@@ -497,8 +556,11 @@ def main():
 
     _phase(6, "", end=True)
     logger.info("  ┌─ COMPARAÇÃO DE RESULTADOS ─────────────────────────────┐")
-    logger.info(f"  │  GA Job  : {estimator.latest_training_job.name}")
-    logger.info(f"  │  GA Model: {estimator.model_data}")
+    if estimator is not None:
+        logger.info(f"  │  GA Job  : {estimator.latest_training_job.name}")
+        logger.info(f"  │  GA Model: {estimator.model_data}")
+    else:
+        logger.info("  │  GA Job  : FALHOU — sem artefato de modelo")
     if autopilot_results:
         logger.info(f"  │  Autopilot candidato : {autopilot_results['candidate_name']}")
         logger.info(f"  │  Autopilot {autopilot_results['metric_name']}: "
@@ -528,11 +590,14 @@ def main():
     # ================================================================
     _phase(8, "Deploy dos endpoints de inferência")
     if not args.skip_deploy:
-        # Deploy do modelo GA (endpoint principal com inference.py customizado)
-        endpoint_name = deploy_sagemaker_endpoint(
-            estimator, args.project, args.endpoint_instance_type, role_arn=role_arn
-        )
-        logger.info(f"Endpoint GA ativo: {endpoint_name}")
+        if estimator is None:
+            logger.warning("Deploy do modelo GA ignorado: training job não foi concluído com sucesso.")
+        else:
+            # Deploy do modelo GA (endpoint principal com inference.py customizado)
+            endpoint_name = deploy_sagemaker_endpoint(
+                estimator, args.project, args.endpoint_instance_type, role_arn=role_arn
+            )
+            logger.info(f"Endpoint GA ativo: {endpoint_name}")
 
         # Deploy do Autopilot (endpoint separado para comparação)
         if autopilot_results and auto_ml:

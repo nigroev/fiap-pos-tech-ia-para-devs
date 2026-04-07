@@ -23,6 +23,7 @@ import json
 import logging
 import os
 import sys
+import traceback
 from copy import deepcopy
 from datetime import datetime, timezone, timedelta
 
@@ -212,6 +213,7 @@ def genetic_algorithm_optimization(X_train, y_train, n_pop=20, n_gen=10, warm_st
         return scores.mean()
 
     def tournament_selection(population, fitnesses, k=5):
+        k = min(k, len(population))
         idxs = np.random.choice(len(population), k, replace=False)
         best_idx = idxs[np.argmax([fitnesses[i] for i in idxs])]
         return deepcopy(population[best_idx])
@@ -299,7 +301,7 @@ def genetic_algorithm_optimization(X_train, y_train, n_pop=20, n_gen=10, warm_st
 # ==============================================================================
 
 
-if __name__ == "__main__":
+def _main():
     parser = argparse.ArgumentParser()
 
     # Modo de execução
@@ -320,7 +322,7 @@ if __name__ == "__main__":
 
     # Diretórios padrão do SageMaker
     parser.add_argument("--model-dir", type=str, default=os.environ.get("SM_MODEL_DIR", "/opt/ml/model"))
-    parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAINING", "/opt/ml/input/data/training"))
+    parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAINING", os.environ.get("SM_CHANNEL_TRAIN", "/opt/ml/input/data/training")))
     parser.add_argument("--output-data-dir", type=str, default=os.environ.get("SM_OUTPUT_DATA_DIR", "/opt/ml/output/data"))
 
     args = parser.parse_args()
@@ -341,8 +343,42 @@ if __name__ == "__main__":
 
     # 1. Ler dados pré-processados do canal de treinamento
     train_dir = args.train
-    csv_files = [f for f in os.listdir(train_dir) if f.endswith(".csv")]
+    logger.info(f"Procurando arquivos CSV em: {train_dir}")
+    
+    # Debug: Listar variáveis de ambiente SM_CHANNEL
+    logger.info("Canais de entrada disponíveis:")
+    for env_key in os.environ:
+        if env_key.startswith("SM_CHANNEL_"):
+            logger.info(f"  {env_key}: {os.environ[env_key]}")
+
+    # Fallback para qualquer canal que comece com SM_CHANNEL_ caso o padrão não exista ou esteja vazio
+    if not os.path.exists(train_dir) or not [f for f in os.listdir(train_dir) if f.endswith(".csv")]:
+        logger.info(f"Diretório '{train_dir}' não existe ou não contém CSVs. Buscando em outros canais...")
+        channels = [v for k, v in os.environ.items() if k.startswith("SM_CHANNEL_")]
+        found_valid_channel = False
+        for channel in channels:
+            if os.path.exists(channel) and [f for f in os.listdir(channel) if f.endswith(".csv")]:
+                train_dir = channel
+                logger.info(f"Canal válido encontrado em: {train_dir}")
+                found_valid_channel = True
+                break
+        
+        if not found_valid_channel:
+            logger.warning("Nenhum canal SM_CHANNEL_ contém arquivos CSV.")
+
+    if os.path.exists(train_dir):
+        csv_files = [f for f in os.listdir(train_dir) if f.endswith(".csv")]
+    else:
+        csv_files = []
+
     if not csv_files:
+        # Debug radical: listar tudo recursivamente se possível ou apenas a raiz do input
+        logger.info("Listagem geral de /opt/ml/input/data/ :")
+        try:
+            for root, dirs, files in os.walk("/opt/ml/input/data/"):
+                logger.info(f"  {root} -> {files}")
+        except Exception:
+            pass
         raise FileNotFoundError(f"Nenhum arquivo CSV encontrado em {train_dir}")
 
     df = pd.read_csv(os.path.join(train_dir, csv_files[0]))
@@ -502,3 +538,32 @@ if __name__ == "__main__":
     logger.info("=" * 60)
     logger.info("  Training Job concluído com sucesso!")
     logger.info("=" * 60)
+
+
+# ==============================================================================
+# Entry point — precisa estar APÓS a definição de _main()
+# ==============================================================================
+
+if __name__ == "__main__":
+    try:
+        _main()
+    except Exception:
+        # Imprime traceback completo para stdout (capturado na FailureReason do SageMaker)
+        tb = traceback.format_exc()
+        print("=" * 60, flush=True)
+        print("ERRO NO TRAINING JOB — traceback completo:", flush=True)
+        print(tb, flush=True)
+        print("=" * 60, flush=True)
+        # Escrever resumo curto primeiro no stderr para que apareça no FailureReason
+        # (SageMaker trunca FailureReason; o framework traceback consome quase tudo)
+        short_err = tb.strip().split("\n")[-1]
+        sys.stderr.write(f"TRAIN_ERROR: {short_err}\n")
+        # Salvar traceback completo em /opt/ml/output/ para recuperação via S3
+        try:
+            out_dir = os.environ.get("SM_OUTPUT_DATA_DIR", "/opt/ml/output/data")
+            os.makedirs(out_dir, exist_ok=True)
+            with open(os.path.join(out_dir, "failure_traceback.txt"), "w") as f:
+                f.write(tb)
+        except Exception:
+            pass
+        sys.exit(1)

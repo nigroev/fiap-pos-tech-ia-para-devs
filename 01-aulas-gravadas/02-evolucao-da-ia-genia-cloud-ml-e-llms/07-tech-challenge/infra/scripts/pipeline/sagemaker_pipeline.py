@@ -86,7 +86,7 @@ def create_sagemaker_pipeline(
 
     tuning_step = TuningStep(
         name=f"{project}-HPO-Tuning",
-        step_args=tuner.fit({"training": data_s3_uri}),
+        step_args=tuner.fit({"train": data_s3_uri}),
     )
 
     # --- Step 2: GA Training (warm start é passado manualmente após HPO) ---
@@ -115,7 +115,7 @@ def create_sagemaker_pipeline(
 
     training_step = TrainingStep(
         name=f"{project}-GA-Training",
-        step_args=ga_estimator.fit({"training": data_s3_uri}),
+        step_args=ga_estimator.fit({"train": data_s3_uri}),
         depends_on=[tuning_step],
     )
 
