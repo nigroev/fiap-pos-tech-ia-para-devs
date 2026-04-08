@@ -4,38 +4,15 @@
 
 Este repositório contém materiais, notebooks e exemplos utilizados ao longo do curso de pós-graduação **Pós Tech: Inteligência Artificial para Desenvolvedores** (turma **8IADT**), oferecido pela **FIAP**. O objetivo é centralizar exercícios práticos, notebooks e scripts das aulas para consulta e estudo.
 
+## Atalhos Tech Challenges 🚀
+
+* [Fase 1 — Tech Challenge - Fase 1 AVC](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/main/01-aulas-gravadas/01-welcome-to-ia-para-devs/07-tech-challenge);
+* [Fase 2 — Tech Challenge - Fase 2 GA e Núvem](https://github.com/paulosobral/fiap-pos-tech-ia-para-devs/tree/main/01-aulas-gravadas/02-evolucao-da-ia-genia-cloud-ml-e-llms/07-tech-challenge);
+
 ## O que há neste repositório ✅
 - Notebooks com exemplos de Machine Learning e Deep Learning
 - Scripts auxiliares e arquivos de dados usados nas aulas
 - Estrutura organizada por módulos e tópicos (ex.: *fundamentos*, *modelos de classificação*, *knn-svm*, *deep learning*, etc.)
-
-## Como usar 🔧
-1. Clone o repositório:
-
-   ```bash
-   git clone <URL-do-repositório>
-   ```
-
-2. Crie e ative um ambiente virtual (recomendado):
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   ```
-
-3. Instale as dependências (quando houver `requirements.txt` em cada pasta):
-
-   ```bash
-   pip install -r caminho/para/requirements.txt
-   ```
-
-4. Para forçar funcionar um notebook utilizando o venv:
-
-   ```bash
-   python -m ipykernel install --user --name=$(basename $PWD)
-   ```
-
-5. Abra os notebooks usando Jupyter / VS Code e execute as células conforme indicado.
 
 ## Observações 📌
 - Este repositório é destinado a fins educacionais e de estudo para os participantes da turma **8IADT**.
