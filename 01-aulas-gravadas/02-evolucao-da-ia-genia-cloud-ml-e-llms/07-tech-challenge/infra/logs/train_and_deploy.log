@@ -1,0 +1,317 @@
+sagemaker.config INFO - Not applying SDK defaults from location: /etc/xdg/sagemaker/config.yaml
+sagemaker.config INFO - Not applying SDK defaults from location: /root/.config/sagemaker/config.yaml
+INFO:pipeline:╔══════════════════════════════════════════════════════════╗
+INFO:pipeline:║  Orquestrador — AVC Stroke Prediction (SageMaker)       ║
+INFO:pipeline:║  Experiments · Feature Store · Pipelines                ║
+INFO:pipeline:║  Autopilot · HPO · GA                                   ║
+INFO:pipeline:╚══════════════════════════════════════════════════════════╝
+INFO:pipeline:  Início: 2026-04-07 12:29:18
+INFO:pipeline:  Bucket: avc-stroke-prediction-dev-144842881551-data | Região: sa-east-1 | Projeto: avc-stroke-prediction
+INFO:pipeline:  Modo: Pipeline | Autopilot: sim | FeatureStore: sim
+INFO:pipeline:  HPO jobs=3 parallel=3 | GA pop=4 gen=3 | max-run=600s | autopilot-timeout=45min
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 1/8: Setup — Role, Session, SageMaker Experiment  [12:29:18]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:botocore.credentials:Found credentials from IAM Role: BaseNotebookInstanceEc2InstanceRole
+INFO:pipeline:Usando role: arn:aws:iam::144842881551:role/avc-stroke-prediction-dev-sagemaker-role
+INFO:botocore.credentials:Found credentials from IAM Role: BaseNotebookInstanceEc2InstanceRole
+INFO:botocore.credentials:Found credentials from IAM Role: BaseNotebookInstanceEc2InstanceRole
+INFO:pipeline:SageMaker Experiment: avc-stroke-prediction-experiment
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 1/8 concluída  (0m1s)  [12:29:19]
+INFO:pipeline:
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 2/8: Ingestão e pré-processamento de dados (NHANES)  [12:29:19]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:Iniciando carga dos dados NHANES (com cache S3)...
+INFO:pipeline:  [CDC API] DEMO_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/DEMO_D.XPT
+INFO:pipeline:  [S3 upload] DEMO_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/demo_D.parquet
+INFO:pipeline:  [CDC API] BPX_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/BPX_D.XPT
+INFO:pipeline:  [S3 upload] BPX_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpx_D.parquet
+INFO:pipeline:  [CDC API] BPQ_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/BPQ_D.XPT
+INFO:pipeline:  [S3 upload] BPQ_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpq_D.parquet
+INFO:pipeline:  [CDC API] OCQ_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/OCQ_D.XPT
+INFO:pipeline:  [S3 upload] OCQ_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ocq_D.parquet
+INFO:pipeline:  [CDC API] GHB_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/GHB_D.XPT
+INFO:pipeline:  [S3 upload] GHB_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ghb_D.parquet
+INFO:pipeline:  [CDC API] BMX_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/BMX_D.XPT
+INFO:pipeline:  [S3 upload] BMX_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bmx_D.parquet
+INFO:pipeline:  [CDC API] SMQ_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/SMQ_D.XPT
+INFO:pipeline:  [S3 upload] SMQ_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/smq_D.parquet
+INFO:pipeline:  [CDC API] MCQ_D.XPT (2005-2006) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/MCQ_D.XPT
+INFO:pipeline:  [S3 upload] MCQ_D.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/mcq_D.parquet
+INFO:pipeline:  [CDC API] DEMO_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/DEMO_E.XPT
+INFO:pipeline:  [S3 upload] DEMO_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/demo_E.parquet
+INFO:pipeline:  [CDC API] BPX_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/BPX_E.XPT
+INFO:pipeline:  [S3 upload] BPX_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpx_E.parquet
+INFO:pipeline:  [CDC API] BPQ_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/BPQ_E.XPT
+INFO:pipeline:  [S3 upload] BPQ_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpq_E.parquet
+INFO:pipeline:  [CDC API] OCQ_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/OCQ_E.XPT
+INFO:pipeline:  [S3 upload] OCQ_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ocq_E.parquet
+INFO:pipeline:  [CDC API] GHB_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/GHB_E.XPT
+INFO:pipeline:  [S3 upload] GHB_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ghb_E.parquet
+INFO:pipeline:  [CDC API] BMX_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/BMX_E.XPT
+INFO:pipeline:  [S3 upload] BMX_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bmx_E.parquet
+INFO:pipeline:  [CDC API] SMQ_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/SMQ_E.XPT
+INFO:pipeline:  [S3 upload] SMQ_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/smq_E.parquet
+INFO:pipeline:  [CDC API] MCQ_E.XPT (2007-2008) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/MCQ_E.XPT
+INFO:pipeline:  [S3 upload] MCQ_E.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/mcq_E.parquet
+INFO:pipeline:  [CDC API] DEMO_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/DEMO_F.XPT
+INFO:pipeline:  [S3 upload] DEMO_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/demo_F.parquet
+INFO:pipeline:  [CDC API] BPX_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/BPX_F.XPT
+INFO:pipeline:  [S3 upload] BPX_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpx_F.parquet
+INFO:pipeline:  [CDC API] BPQ_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/BPQ_F.XPT
+INFO:pipeline:  [S3 upload] BPQ_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpq_F.parquet
+INFO:pipeline:  [CDC API] OCQ_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/OCQ_F.XPT
+INFO:pipeline:  [S3 upload] OCQ_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ocq_F.parquet
+INFO:pipeline:  [CDC API] GHB_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/GHB_F.XPT
+INFO:pipeline:  [S3 upload] GHB_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ghb_F.parquet
+INFO:pipeline:  [CDC API] BMX_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/BMX_F.XPT
+INFO:pipeline:  [S3 upload] BMX_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bmx_F.parquet
+INFO:pipeline:  [CDC API] SMQ_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/SMQ_F.XPT
+INFO:pipeline:  [S3 upload] SMQ_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/smq_F.parquet
+INFO:pipeline:  [CDC API] MCQ_F.XPT (2009-2010) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/MCQ_F.XPT
+INFO:pipeline:  [S3 upload] MCQ_F.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/mcq_F.parquet
+INFO:pipeline:  [CDC API] DEMO_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/DEMO_G.XPT
+INFO:pipeline:  [S3 upload] DEMO_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/demo_G.parquet
+INFO:pipeline:  [CDC API] BPX_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/BPX_G.XPT
+INFO:pipeline:  [S3 upload] BPX_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpx_G.parquet
+INFO:pipeline:  [CDC API] BPQ_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/BPQ_G.XPT
+INFO:pipeline:  [S3 upload] BPQ_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpq_G.parquet
+INFO:pipeline:  [CDC API] OCQ_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/OCQ_G.XPT
+INFO:pipeline:  [S3 upload] OCQ_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ocq_G.parquet
+INFO:pipeline:  [CDC API] GHB_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/GHB_G.XPT
+INFO:pipeline:  [S3 upload] GHB_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ghb_G.parquet
+INFO:pipeline:  [CDC API] BMX_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/BMX_G.XPT
+INFO:pipeline:  [S3 upload] BMX_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bmx_G.parquet
+INFO:pipeline:  [CDC API] SMQ_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/SMQ_G.XPT
+INFO:pipeline:  [S3 upload] SMQ_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/smq_G.parquet
+INFO:pipeline:  [CDC API] MCQ_G.XPT (2011-2012) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/MCQ_G.XPT
+INFO:pipeline:  [S3 upload] MCQ_G.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/mcq_G.parquet
+INFO:pipeline:  [CDC API] DEMO_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/DEMO_H.XPT
+INFO:pipeline:  [S3 upload] DEMO_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/demo_H.parquet
+INFO:pipeline:  [CDC API] BPX_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/BPX_H.XPT
+INFO:pipeline:  [S3 upload] BPX_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpx_H.parquet
+INFO:pipeline:  [CDC API] BPQ_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/BPQ_H.XPT
+INFO:pipeline:  [S3 upload] BPQ_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpq_H.parquet
+INFO:pipeline:  [CDC API] OCQ_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/OCQ_H.XPT
+INFO:pipeline:  [S3 upload] OCQ_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ocq_H.parquet
+INFO:pipeline:  [CDC API] GHB_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/GHB_H.XPT
+INFO:pipeline:  [S3 upload] GHB_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ghb_H.parquet
+INFO:pipeline:  [CDC API] BMX_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/BMX_H.XPT
+INFO:pipeline:  [S3 upload] BMX_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bmx_H.parquet
+INFO:pipeline:  [CDC API] SMQ_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/SMQ_H.XPT
+INFO:pipeline:  [S3 upload] SMQ_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/smq_H.parquet
+INFO:pipeline:  [CDC API] MCQ_H.XPT (2013-2014) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2013/DataFiles/MCQ_H.XPT
+INFO:pipeline:  [S3 upload] MCQ_H.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/mcq_H.parquet
+INFO:pipeline:  [CDC API] DEMO_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/DEMO_I.XPT
+INFO:pipeline:  [S3 upload] DEMO_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/demo_I.parquet
+INFO:pipeline:  [CDC API] BPX_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/BPX_I.XPT
+INFO:pipeline:  [S3 upload] BPX_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpx_I.parquet
+INFO:pipeline:  [CDC API] BPQ_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/BPQ_I.XPT
+INFO:pipeline:  [S3 upload] BPQ_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpq_I.parquet
+INFO:pipeline:  [CDC API] OCQ_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/OCQ_I.XPT
+INFO:pipeline:  [S3 upload] OCQ_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ocq_I.parquet
+INFO:pipeline:  [CDC API] GHB_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/GHB_I.XPT
+INFO:pipeline:  [S3 upload] GHB_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ghb_I.parquet
+INFO:pipeline:  [CDC API] BMX_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/BMX_I.XPT
+INFO:pipeline:  [S3 upload] BMX_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bmx_I.parquet
+INFO:pipeline:  [CDC API] SMQ_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/SMQ_I.XPT
+INFO:pipeline:  [S3 upload] SMQ_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/smq_I.parquet
+INFO:pipeline:  [CDC API] MCQ_I.XPT (2015-2016) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2015/DataFiles/MCQ_I.XPT
+INFO:pipeline:  [S3 upload] MCQ_I.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/mcq_I.parquet
+INFO:pipeline:  [CDC API] DEMO_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/DEMO_J.XPT
+INFO:pipeline:  [S3 upload] DEMO_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/demo_J.parquet
+INFO:pipeline:  [CDC API] BPX_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BPX_J.XPT
+INFO:pipeline:  [S3 upload] BPX_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpx_J.parquet
+INFO:pipeline:  [CDC API] BPQ_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BPQ_J.XPT
+INFO:pipeline:  [S3 upload] BPQ_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bpq_J.parquet
+INFO:pipeline:  [CDC API] OCQ_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/OCQ_J.XPT
+INFO:pipeline:  [S3 upload] OCQ_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ocq_J.parquet
+INFO:pipeline:  [CDC API] GHB_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/GHB_J.XPT
+INFO:pipeline:  [S3 upload] GHB_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/ghb_J.parquet
+INFO:pipeline:  [CDC API] BMX_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BMX_J.XPT
+INFO:pipeline:  [S3 upload] BMX_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/bmx_J.parquet
+INFO:pipeline:  [CDC API] SMQ_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/SMQ_J.XPT
+INFO:pipeline:  [S3 upload] SMQ_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/smq_J.parquet
+INFO:pipeline:  [CDC API] MCQ_J.XPT (2017-2018) -> baixando de https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/MCQ_J.XPT
+INFO:pipeline:  [S3 upload] MCQ_J.XPT -> s3://avc-stroke-prediction-dev-144842881551-data/data/raw/nhanes/mcq_J.parquet
+INFO:pipeline:Dataset combinado: 70190 linhas, 383 colunas
+INFO:pipeline:Pré-processando dados...
+INFO:pipeline:Dataset pré-processado: 39473 linhas, 11 colunas
+INFO:pipeline:Distribuição do target:
+MCQ160F_stroke_bin
+0    37904
+1     1569
+Name: count, dtype: int64
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 3/8: Feature Store — ingestão de features pré-processadas  [12:29:41]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:Feature Group já existe: avc-stroke-prediction-nhanes-stroke-features
+INFO:pipeline:Ingerindo 39473 registros no Feature Store...
+INFO:sagemaker.telemetry.telemetry_logging:SageMaker Python SDK will collect telemetry to help us better understand our user's needs, diagnose issues, and deliver additional features.
+To opt out of telemetry, please disable via TelemetryOptOut parameter in SDK defaults config. For more information, refer to https://sagemaker.readthedocs.io/en/stable/overview.html#configuring-and-using-defaults-with-the-sagemaker-python-sdk.
+INFO:botocore.credentials:Found credentials from IAM Role: BaseNotebookInstanceEc2InstanceRole
+INFO:botocore.credentials:Found credentials from IAM Role: BaseNotebookInstanceEc2InstanceRole
+INFO:botocore.credentials:Found credentials from IAM Role: BaseNotebookInstanceEc2InstanceRole
+INFO:botocore.credentials:Found credentials from IAM Role: BaseNotebookInstanceEc2InstanceRole
+INFO:sagemaker.feature_store.feature_group:Started ingesting index 19738 to 29607
+INFO:sagemaker.feature_store.feature_group:Started ingesting index 0 to 9869
+INFO:sagemaker.feature_store.feature_group:Started ingesting index 29607 to 39473
+INFO:sagemaker.feature_store.feature_group:Started ingesting index 9869 to 19738
+INFO:sagemaker.feature_store.feature_group:Successfully ingested row 19738 to 29607
+INFO:sagemaker.feature_store.feature_group:Successfully ingested row 29607 to 39473
+INFO:sagemaker.feature_store.feature_group:Successfully ingested row 0 to 9869
+INFO:sagemaker.feature_store.feature_group:Successfully ingested row 9869 to 19738
+INFO:pipeline:Feature Store: 39473 registros ingeridos com sucesso
+INFO:pipeline:Features ingeridas no Feature Store: avc-stroke-prediction-nhanes-stroke-features
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 3/8 concluída  (2m2s)  [12:31:44]
+INFO:pipeline:
+INFO:pipeline:Salvando dataset processado no S3...
+INFO:pipeline:Dataset salvo em s3://avc-stroke-prediction-dev-144842881551-data/data/nhanes_stroke_processed.csv
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 2/8 concluída  (2m25s)  [12:31:44]
+INFO:pipeline:
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 4/8: Autopilot AutoML — lançamento assíncrono  [12:31:45]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:Lançando SageMaker Autopilot (AutoML)...
+INFO:pipeline:Autopilot job lançado: avc-ap-0407123145 (mode=ENSEMBLING, max_candidates=3, max_runtime_per_job=600s, max_total=2700s)
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 4/8 concluída  (0m1s)  [12:31:46]
+INFO:pipeline:
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 5/8: Treinamento — SageMaker Pipelines (HPO + GA)  [12:31:46]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:Executando via SageMaker Pipelines...
+INFO:pipeline:Criando SageMaker Pipeline...
+INFO:pipeline:Training source dir criado: /tmp/sagemaker_train_src_htfroca8
+WARNING:sagemaker:instance_type is a PipelineVariable (<class 'sagemaker.workflow.parameters.ParameterString'>). Its interpreted value in execution time should not be of GPU types since GPU training is not supported for Scikit-Learn.
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.retrieve) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+/home/ec2-user/anaconda3/envs/python3/lib/python3.12/site-packages/sagemaker/workflow/pipeline_context.py:332: UserWarning: Running within a PipelineSession, there will be No Wait, No Logs, and No Job being started.
+  warnings.warn(
+WARNING:sagemaker:instance_type is a PipelineVariable (<class 'sagemaker.workflow.parameters.ParameterString'>). Its interpreted value in execution time should not be of GPU types since GPU training is not supported for Scikit-Learn.
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.retrieve) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+INFO:sagemaker.telemetry.telemetry_logging:SageMaker Python SDK will collect telemetry to help us better understand our user's needs, diagnose issues, and deliver additional features.
+To opt out of telemetry, please disable via TelemetryOptOut parameter in SDK defaults config. For more information, refer to https://sagemaker.readthedocs.io/en/stable/overview.html#configuring-and-using-defaults-with-the-sagemaker-python-sdk.
+INFO:pipeline:Pipeline criado: avc-stroke-prediction-pipeline
+INFO:sagemaker.telemetry.telemetry_logging:SageMaker Python SDK will collect telemetry to help us better understand our user's needs, diagnose issues, and deliver additional features.
+To opt out of telemetry, please disable via TelemetryOptOut parameter in SDK defaults config. For more information, refer to https://sagemaker.readthedocs.io/en/stable/overview.html#configuring-and-using-defaults-with-the-sagemaker-python-sdk.
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.get_training_image_uri) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+WARNING:sagemaker.estimator:No finished training job found associated with this estimator. Please make sure this estimator is only used for building workflow config
+WARNING:sagemaker.estimator:No finished training job found associated with this estimator. Please make sure this estimator is only used for building workflow config
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.get_training_image_uri) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+WARNING:sagemaker.workflow.utilities:Popping out 'HyperParameterTuningJobName' from the pipeline definition by default since it will be overridden at pipeline execution time. Please utilize the PipelineDefinitionConfig to persist this field in the pipeline definition if desired.
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.get_training_image_uri) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+WARNING:sagemaker.workflow.utilities:Popping out 'TrainingJobName' from the pipeline definition by default since it will be overridden at pipeline execution time. Please utilize the PipelineDefinitionConfig to persist this field in the pipeline definition if desired.
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.get_training_image_uri) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+WARNING:sagemaker.estimator:No finished training job found associated with this estimator. Please make sure this estimator is only used for building workflow config
+WARNING:sagemaker.estimator:No finished training job found associated with this estimator. Please make sure this estimator is only used for building workflow config
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.get_training_image_uri) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+WARNING:sagemaker.workflow.utilities:Popping out 'HyperParameterTuningJobName' from the pipeline definition by default since it will be overridden at pipeline execution time. Please utilize the PipelineDefinitionConfig to persist this field in the pipeline definition if desired.
+WARNING:sagemaker.workflow.utilities:The input argument instance_type of function (sagemaker.image_uris.get_training_image_uri) is a pipeline variable (<class 'sagemaker.workflow.parameters.ParameterString'>), which is interpreted in pipeline execution time only. As the function needs to evaluate the argument value in SDK compile time, the default_value of this Parameter object will be used to override it. Please make sure the default_value is valid.
+WARNING:sagemaker.workflow.utilities:Popping out 'TrainingJobName' from the pipeline definition by default since it will be overridden at pipeline execution time. Please utilize the PipelineDefinitionConfig to persist this field in the pipeline definition if desired.
+INFO:sagemaker.telemetry.telemetry_logging:SageMaker Python SDK will collect telemetry to help us better understand our user's needs, diagnose issues, and deliver additional features.
+To opt out of telemetry, please disable via TelemetryOptOut parameter in SDK defaults config. For more information, refer to https://sagemaker.readthedocs.io/en/stable/overview.html#configuring-and-using-defaults-with-the-sagemaker-python-sdk.
+INFO:pipeline:Pipeline execution ARN: arn:aws:sagemaker:sa-east-1:144842881551:pipeline/avc-stroke-prediction-pipeline/execution/ra6qgd8uwurn
+INFO:pipeline:Parâmetros: HPO max_jobs=3 parallel=3 | GA pop=4 gen=3 | instance=ml.m5.large
+INFO:pipeline:Acompanhando execução do Pipeline... (poll a cada 60s)
+INFO:pipeline:  Pipeline: Executing | steps 0/0 concluídos — aguardando 60s...
+INFO:pipeline:  [Step 1/1] avc-stroke-prediction-HPO-Tuning (): Pendente → Executing
+INFO:pipeline:    HPO 'ra6qgd8uwurn-avc-stro-l1QLuO7o0s': Completed=0, InProgress=3, Failed=0 | BestMetric=-=-
+INFO:pipeline:  Pipeline: Executing | steps 0/1 concluídos — aguardando 60s...
+INFO:pipeline:    HPO 'ra6qgd8uwurn-avc-stro-l1QLuO7o0s': Completed=0, InProgress=3, Failed=0 | BestMetric=-=-
+INFO:pipeline:  Pipeline: Executing | steps 0/1 concluídos — aguardando 60s...
+INFO:pipeline:  [Step 1/2] avc-stroke-prediction-GA-Training (): Pendente → Starting
+INFO:pipeline:  [Step 2/2] avc-stroke-prediction-HPO-Tuning (): Executing → Succeeded
+INFO:pipeline:  Pipeline: Executing | steps 1/2 concluídos — aguardando 60s...
+INFO:pipeline:  [Step 1/2] avc-stroke-prediction-GA-Training (): Starting → Executing
+INFO:pipeline:    Training 'pipelines-ra6qgd8uwurn-avc-stroke-predictio-t8VHKOY844': InProgress (Downloading) | Elapsed=0m19s
+INFO:pipeline:  Pipeline: Executing | steps 1/2 concluídos — aguardando 60s...
+INFO:pipeline:    Training 'pipelines-ra6qgd8uwurn-avc-stroke-predictio-t8VHKOY844': InProgress (Downloading) | Elapsed=1m19s
+INFO:pipeline:  Pipeline: Executing | steps 1/2 concluídos — aguardando 60s...
+INFO:pipeline:    Training 'pipelines-ra6qgd8uwurn-avc-stroke-predictio-t8VHKOY844': InProgress (Training) | Elapsed=2m19s
+INFO:pipeline:  Pipeline: Executing | steps 1/2 concluídos — aguardando 60s...
+INFO:pipeline:  [Step 1/2] avc-stroke-prediction-GA-Training (): Executing → Succeeded
+INFO:pipeline:Pipeline finalizado com status: Succeeded
+
+2026-04-07 15:38:18 Starting - Preparing the instances for training
+2026-04-07 15:38:18 Downloading - Downloading the training image
+2026-04-07 15:38:18 Training - Training image download completed. Training in progress.
+2026-04-07 15:38:18 Uploading - Uploading generated training model
+2026-04-07 15:38:18 Completed - Training job completedINFO:pipeline:Estimator recuperado do Pipeline: pipelines-ra6qgd8uwurn-avc-stroke-predictio-t8VHKOY844
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 5/8 concluída  (7m9s)  [12:38:55]
+INFO:pipeline:
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 6/8: Aguardar Autopilot e comparar resultados  [12:38:55]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:Aguardando conclusão do Autopilot job: avc-ap-0407123145...
+INFO:pipeline:  Timeout configurado: 45 minutos
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [0min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [1min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [2min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [3min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [4min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [5min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [6min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [7min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [8min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [9min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [10min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [11min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [12min]
+INFO:pipeline:  Autopilot status: InProgress (TrainingModels) [13min]
+INFO:pipeline:  Autopilot status: Completed (Completed) [14min]
+INFO:pipeline:Autopilot concluído!
+INFO:pipeline:  Melhor candidato: WeightedEnsemble-L2-FULL-t3144842881551avc-ap-0407123145
+INFO:pipeline:  Métrica (F1): 0.2469325214624405
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 6/8 concluída  (14m2s)  [12:52:58]
+INFO:pipeline:
+INFO:pipeline:  ┌─ COMPARAÇÃO DE RESULTADOS ─────────────────────────────┐
+INFO:pipeline:  │  GA Job  : pipelines-ra6qgd8uwurn-avc-stroke-predictio-t8VHKOY844
+INFO:pipeline:  │  GA Model: s3://avc-stroke-prediction-dev-144842881551-data/models/pipelines-ra6qgd8uwurn-avc-stroke-predictio-t8VHKOY844/output/model.tar.gz
+INFO:pipeline:  │  Autopilot candidato : WeightedEnsemble-L2-FULL-t3144842881551avc-ap-0407123145
+INFO:pipeline:  │  Autopilot F1: 0.2469
+INFO:pipeline:  └──────────────────────────────────────────────────────────┘
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 7/8: Salvar métricas consolidadas no S3  [12:52:58]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:Métricas salvas em s3://avc-stroke-prediction-dev-144842881551-data/output/training_metrics.json
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 7/8 concluída  (0m0s)  [12:52:58]
+INFO:pipeline:
+INFO:pipeline:
+INFO:pipeline:╭────────────────────────────────────────────────────────╮
+INFO:pipeline:  ▶ FASE 8/8: Deploy dos endpoints de inferência  [12:52:58]
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:Fazendo deploy do endpoint no SageMaker...
+INFO:pipeline:inference_src enviado para s3://avc-stroke-prediction-dev-144842881551-data/avc-stroke-prediction/inference-src/sourcedir.tar.gz
+INFO:pipeline:Container image: 737474898029.dkr.ecr.sa-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+INFO:pipeline:Criando endpoint 'avc-stroke-prediction-endpoint' (tentativa 1/2, instance: ml.t2.large)...
+INFO:pipeline:Model data: s3://avc-stroke-prediction-dev-144842881551-data/models/pipelines-ra6qgd8uwurn-avc-stroke-predictio-t8VHKOY844/output/model.tar.gz
+INFO:pipeline:  Endpoint 'avc-stroke-prediction-endpoint': Creating (0s/900s)
+INFO:pipeline:  Endpoint 'avc-stroke-prediction-endpoint': Creating (30s/900s)
+INFO:pipeline:  Endpoint 'avc-stroke-prediction-endpoint': Creating (60s/900s)
+INFO:pipeline:  Endpoint 'avc-stroke-prediction-endpoint': Creating (90s/900s)
+INFO:pipeline:  Endpoint 'avc-stroke-prediction-endpoint': Creating (120s/900s)
+INFO:pipeline:  Endpoint 'avc-stroke-prediction-endpoint': Creating (150s/900s)
+INFO:pipeline:  Endpoint 'avc-stroke-prediction-endpoint': Creating (180s/900s)
+INFO:pipeline:Endpoint ativo: avc-stroke-prediction-endpoint
+INFO:pipeline:Endpoint GA ativo: avc-stroke-prediction-endpoint
+INFO:pipeline:╰────────────────────────────────────────────────────────╯
+INFO:pipeline:  ✓ FASE 8/8 concluída  (3m32s)  [12:56:31]
+INFO:pipeline:
+INFO:pipeline:╔══════════════════════════════════════════════════════════╗
+INFO:pipeline:║  ✓ Pipeline concluído com sucesso!                      ║
+INFO:pipeline:║  Fim: 2026-04-07 12:56:31                               ║
+INFO:pipeline:╚══════════════════════════════════════════════════════════╝
