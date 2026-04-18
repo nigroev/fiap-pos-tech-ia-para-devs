@@ -1,0 +1,5 @@
+jupyter==1.1.1
+ipykernel==7.1.0
+datasets
+accelerate==0.27.0
+transformers==4.41.2
