@@ -26,4 +26,4 @@ mapeamento_previsoes = { 'S': 'Solúvel', 'N': 'Não Solúvel' }
 
 print("Previsões do modelo para os compostos testados:", previsoes)
 for i, previsao in enumerate(previsoes):
-    print(f"O Composto {i+1} pode ser considerado {mapeamento_previsoes[previsao]}")
+    print(f"O Composto {i+1} pode ser considerado: {mapeamento_previsoes[previsao]}")
